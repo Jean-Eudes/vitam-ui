@@ -1205,28 +1205,6 @@
     <build>
         <plugins>
             <plugin>
-                <!-- Security check for dependencies -->
-                <groupId>org.owasp</groupId>
-                <artifactId>dependency-check-maven</artifactId>
-                <version>${maven.dependencycheck.version}</version>
-                <inherited>false</inherited>
-                <configuration>
-                    <cveUrlModified>${env.SERVICE_REPOSITORY_URL}/nist/nvdcve-1.1-modified.json.gz</cveUrlModified>
-                    <cveUrlBase>${env.SERVICE_REPOSITORY_URL}/nist/nvdcve-1.1-%d.json.gz</cveUrlBase>
-                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
-                    <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
-                    <failOnError>false</failOnError>
-                </configuration>
-
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <version>3.0</version>
@@ -1929,9 +1907,12 @@
                 <sonar.exclusions>**/node_modules/**, **/sass/**</sonar.exclusions>
                 <sonar.java.spotbugs.reportPaths>./target/spotbugsXml.xml</sonar.java.spotbugs.reportPaths>
                 <sonar.java.pmd.reportPaths>./target/pmd.xml</sonar.java.pmd.reportPaths>
-                <sonar.dependencyCheck.htmlReportPath>./target/dependency-check-report.html</sonar.dependencyCheck.htmlReportPath>
-                <sonar.dependencyCheck.jsonReportPath>./target/dependency-check-report.json</sonar.dependencyCheck.jsonReportPath>
-                <sonar.dependencyCheck.xmlReportPath>./target/dependency-check-report.xml</sonar.dependencyCheck.xmlReportPath>
+                <sonar.dependencyCheck.htmlReportPath>./target/dependency-check-report.html
+                </sonar.dependencyCheck.htmlReportPath>
+                <sonar.dependencyCheck.jsonReportPath>./target/dependency-check-report.json
+                </sonar.dependencyCheck.jsonReportPath>
+                <sonar.dependencyCheck.xmlReportPath>./target/dependency-check-report.xml
+                </sonar.dependencyCheck.xmlReportPath>
                 <!-- TODO: This properties need to bo specify by the user who execute
                 the report (ex: Jenkins or developper) -->
                 <sonar.host.url/>
