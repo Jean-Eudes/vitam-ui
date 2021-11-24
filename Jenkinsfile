@@ -82,7 +82,7 @@ pipeline {
             }
             steps {
                 sh '''
-                    $MVN_COMMAND clean install -Psonar-metrics
+                    $MVN_COMMAND test -Psonar-metrics
                 '''
             }
         }
