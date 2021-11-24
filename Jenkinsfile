@@ -88,7 +88,7 @@ pipeline {
 //                    $MVN_COMMAND clean verify org.owasp:dependency-check-maven:aggregate -Pvitam -pl '!cots/vitamui-nginx,!cots/vitamui-mongod,!cots/vitamui-logstash,!cots/vitamui-mongo-express' $JAVA_TOOL_OPTIONS
 //                '''
                 sh '''
-                    $MVN_COMMAND clean verify -Psonar-metrics -pl '!cots/vitamui-nginx,!cots/vitamui-mongod,!cots/vitamui-logstash,!cots/vitamui-mongo-express' $JAVA_TOOL_OPTIONS
+                    $MVN_COMMAND test org.owasp:dependency-check-maven:check $JAVA_TOOL_OPTIONS
                 '''
             }
             post {
