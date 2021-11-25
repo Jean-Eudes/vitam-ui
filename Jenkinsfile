@@ -35,56 +35,9 @@ pipeline {
 //        cron('45 2 * * *')
 //    }
 
-    stages {          
-         
-         /*
-          when {
-                environment(name: 'DO_TEST', value: 'true')
-            }
-            environment {
-                PUPPETEER_DOWNLOAD_HOST="${env.SERVICE_NEXUS_URL}/repository/puppeteer-chrome/"
-                JAVA_TOOL_OPTIONS=""
-            } 
-        stage('Activate steps') {
-            agent none
-            steps {
-                script {
-                    env.DO_MAJ_CONTEXT = 'true'
-                    env.DO_TEST = 'true'
-                    env.DO_BUILD = 'true'
-                    env.DO_PUBLISH = 'true'
-                    env.DO_CHECKMARX = 'false'
-                }
-            }
-        }
 
-        stage('Upgrade build context') {
-	    when {
-                environment(name: 'DO_MAJ_CONTEXT', value: 'true')
-            }
-            environment {
-                NODE_JS_DOWNLOAD_URL="https://rpm.nodesource.com/setup_16.x"
-                http_proxy="http://${env.SERVICE_PROXY_HOST}:${env.SERVICE_PROXY_PORT}"
-                https_proxy="http://${env.SERVICE_PROXY_HOST}:${env.SERVICE_PROXY_PORT}"
-            }
-            steps {
-                sh 'sudo yum install -y gcc-c++ make'
-                sh 'sudo yum remove -y nodejs'
-                sh 'curl -sL https://rpm.nodesource.com/setup_16.x | sudo -E bash -'
-                sh 'sudo yum install -y nodejs'
-          //      sh 'sudo yum install -y nodejs-16.9.0-1nodesource'
-                sh 'node -v'
-                sh '/usr/bin/node -v'
-                sh 'npm -v'
-                sh 'sudo rm /usr/local/bin/node || true'
-                sh 'sudo rm /usr/local/bin/npm || true'
-                sh 'node -v;npm -v'
-            }
-        }
-         */
-
+ stages {
         stage('Build and tests.') {
-            steps {
             parallel(
                     'Back install and Test': {
                         sh ''' $MVN_COMMAND install -pl !ui,!ui/ui-frontend-common,!ui/ui-frontend,!ui/ui-portal,!ui/ui-identity,!ui/ui-referential '''
@@ -92,9 +45,10 @@ pipeline {
                     'Build and Test Ui Frontend Common': {
                         sh ''' $MVN_COMMAND install -DskipAllFrontendTest -DskipTests=true -Pprod -f ui/ui-frontend-common/pom.xml  '''
                     }
-                )
-
-                parallel(
+                )                            
+        }
+        stage('Ui Frontend') {
+            parallel(
                     'Build ui parent': {
                         sh ''' $MVN_COMMAND install -DskipTests=true -DskipAllFrontendTest -Pprod -f ui/pom.xml -pl !ui-frontend-common,!ui-frontend,!ui-portal,!ui-identity,!ui-referential '''
                     },
@@ -102,6 +56,11 @@ pipeline {
                         sh ''' $MVN_COMMAND install -DskipAllFrontendTest -DskipTests=true -f ui/ui-frontend/pom.xml '''
                     }
                 )
+
+                
+        }
+stage('Uis ') {
+             
 
                 parallel(
                     'Ui identity': {
@@ -113,11 +72,9 @@ pipeline {
                     'Ui referential': {
                         sh ''' $MVN_COMMAND install -Pprod -f ui/ui-referential/pom.xml  '''
                     }
-                )
-
+                ) 
         }
-        }
-
+ 
   
 
         stage('Build sources') {
