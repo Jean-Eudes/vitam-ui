@@ -38,6 +38,7 @@ pipeline {
 
  stages {
         stage('Build and tests.') {
+              steps {
             parallel(
                     'Back install and Test': {
                         sh ''' $MVN_COMMAND install -pl !ui,!ui/ui-frontend-common,!ui/ui-frontend,!ui/ui-portal,!ui/ui-identity,!ui/ui-referential '''
@@ -45,9 +46,11 @@ pipeline {
                     'Build and Test Ui Frontend Common': {
                         sh ''' $MVN_COMMAND install -DskipAllFrontendTest -DskipTests=true -Pprod -f ui/ui-frontend-common/pom.xml  '''
                     }
-                )                            
+                )    
+              }                        
         }
         stage('Ui Frontend') {
+              steps {
             parallel(
                     'Build ui parent': {
                         sh ''' $MVN_COMMAND install -DskipTests=true -DskipAllFrontendTest -Pprod -f ui/pom.xml -pl !ui-frontend-common,!ui-frontend,!ui-portal,!ui-identity,!ui-referential '''
@@ -56,12 +59,12 @@ pipeline {
                         sh ''' $MVN_COMMAND install -DskipAllFrontendTest -DskipTests=true -f ui/ui-frontend/pom.xml '''
                     }
                 )
-
+              }
                 
         }
 stage('Uis ') {
              
-
+  steps {
                 parallel(
                     'Ui identity': {
                         sh ''' $MVN_COMMAND install -Pprod -f ui/ui-identity/pom.xml '''
@@ -73,6 +76,7 @@ stage('Uis ') {
                         sh ''' $MVN_COMMAND install -Pprod -f ui/ui-referential/pom.xml  '''
                     }
                 ) 
+  }
         }
  
   
