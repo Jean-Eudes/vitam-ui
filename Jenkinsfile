@@ -84,7 +84,7 @@ pipeline {
          */
 
         stage('Check vulnerabilities and tests.') {
-
+            steps {
             parallel(
                 'Back install and Test': {
                     sh ''' $MVN_COMMAND install -pl !ui,!ui/ui-frontend-common,!ui/ui-frontend,!ui/ui-portal,!ui/ui-identity,!ui/ui-referential '''
@@ -130,7 +130,7 @@ pipeline {
                 //     )
               //   }
            //  }
-            
+            }
         }
 
         stage('Build sources') {
