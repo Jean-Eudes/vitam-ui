@@ -83,55 +83,21 @@ pipeline {
         }
          */
 
-        stage('Check vulnerabilities and tests.') {
-            steps {
-            parallel(
-                'Back install and Test': {
-                    sh ''' $MVN_COMMAND install -pl !ui,!ui/ui-frontend-common,!ui/ui-frontend,!ui/ui-portal,!ui/ui-identity,!ui/ui-referential '''
-                },
-                'Build and Test Ui Frontend Common': {
-                    sh ''' $MVN_COMMAND install -DskipAllFrontendTest -DskipTests=true -Pprod -f ui/ui-frontend-common/pom.xml  '''
-                }
-            )
+        stage('Build and tests.') {
+        steps {
+        parallel(
+                        'Back install and Test': {
+                            sh ''' $MVN_COMMAND install -pl !ui,!ui/ui-frontend-common,!ui/ui-frontend,!ui/ui-portal,!ui/ui-identity,!ui/ui-referential '''
+                        },
+                        'Build and Test Ui Frontend Common': {
+                            sh ''' $MVN_COMMAND install -DskipAllFrontendTest -DskipTests=true -Pprod -f ui/ui-frontend-common/pom.xml  '''
+                        }
+                    )
 
-            parallel(
-                'Build ui parent': {
-                    sh ''' $MVN_COMMAND install -DskipTests=true -DskipAllFrontendTest -Pprod -f ui/pom.xml -pl !ui-frontend-common,!ui-frontend,!ui-portal,!ui-identity,!ui-referential '''
-                },
-                'Build and Test Ui Frontend': {
-                    sh ''' $MVN_COMMAND install -DskipAllFrontendTest -DskipTests=true -f ui/ui-frontend/pom.xml '''
-                }
-            )
-
-            parallel(
-                'Ui identity': {
-                    sh ''' $MVN_COMMAND install -Pprod -f ui/ui-identity/pom.xml '''
-                },
-                'Ui portal': {
-                    sh ''' $MVN_COMMAND install -Pprod -f ui/ui-portal/pom.xml '''
-                },
-                'Ui referential': {
-                    sh ''' $MVN_COMMAND install -Pprod -f ui/ui-referential/pom.xml  '''
-                }
-            )
-
-           //  stage('Qube Analysis'){
-             //    // modMaven.sonar_analysis()
-           //  }
-            
-           //  post {
-             //    always {
-              //       junit '**/target/surefire-reports/*.xml'
-               //  }
-             //    success {
-               //      archiveArtifacts (
-                //         artifacts: '**/dependency-check-report.html',
-               //          fingerprint: true
-                //     )
-              //   }
-           //  }
-            }
         }
+        }
+
+      
 
         stage('Build sources') {
             environment {
