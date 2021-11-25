@@ -72,20 +72,7 @@ pipeline {
                 sh 'node -v;npm -v'
             }
         }
-        stage('Check vulnerabilities.') {
-            when {
-                environment(name: 'DO_TEST', value: 'true')
-            }
-            environment {
-                PUPPETEER_DOWNLOAD_HOST="${env.SERVICE_NEXUS_URL}/repository/puppeteer-chrome/"
-                JAVA_TOOL_OPTIONS=""
-            }
-            steps {
-                sh '''
-                    $MVN_COMMAND test -Psonar-metrics
-                '''
-            }
-        }
+
         stage('Check vulnerabilities and tests.') {
             when {
                 environment(name: 'DO_TEST', value: 'true')
@@ -97,24 +84,53 @@ pipeline {
             steps {
                 sh 'node -v'
                 sh 'npmrc default'
-//                sh '''
-//                    $MVN_COMMAND clean verify org.owasp:dependency-check-maven:aggregate -Pvitam -pl '!cots/vitamui-nginx,!cots/vitamui-mongod,!cots/vitamui-logstash,!cots/vitamui-mongo-express' $JAVA_TOOL_OPTIONS
-//                '''
-                sh '''
-                    $MVN_COMMAND clean verify -Pvitam -pl '!cots/vitamui-nginx,!cots/vitamui-mongod,!cots/vitamui-logstash,!cots/vitamui-mongo-express' $JAVA_TOOL_OPTIONS
-                '''
-            }
-            post {
-                always {
-                    junit '**/target/surefire-reports/*.xml'
+                parallel(
+                    'Back install and Test': {
+                        sh ''' $MVN_COMMAND install -pl !ui,!ui/ui-frontend-common,!ui/ui-frontend,!ui/ui-portal,!ui/ui-identity,!ui/ui-referential '''
+                    },
+                    'Build and Test Ui Frontend Common': {
+                        sh ''' $MVN_COMMAND install -DskipAllFrontendTest -DskipTests=true -Pprod -f ui/ui-frontend-common/pom.xml  '''
+                    }
+                )
+
+                parallel(
+                    'Build ui parent': {
+                        sh ''' $MVN_COMMAND install -DskipTests=true -DskipAllFrontendTest -Pprod -f ui/pom.xml -pl !ui-frontend-common,!ui-frontend,!ui-portal,!ui-identity,!ui-referential '''
+                    },
+                    'Build and Test Ui Frontend': {
+                        sh ''' $MVN_COMMAND install -DskipAllFrontendTest -DskipTests=true -f ui/ui-frontend/pom.xml '''
+                    }
+                )
+
+                parallel(
+                    'Ui identity': {
+                        sh ''' $MVN_COMMAND install -Pprod -f ui/ui-identity/pom.xml '''
+                    },
+                    'Ui portal': {
+                        sh ''' $MVN_COMMAND install -Pprod -f ui/ui-portal/pom.xml '''
+                    },
+                    'Ui referential': {
+                        sh ''' $MVN_COMMAND install -Pprod -f ui/ui-referential/pom.xml  '''
+                    }
+                )
+
+                stage('Qube Analysis'){
+                    // modMaven.sonar_analysis()
                 }
-                success {
-                    archiveArtifacts (
-                        artifacts: '**/dependency-check-report.html',
-                        fingerprint: true
-                    )
+                post {
+                    always {
+                        junit '**/target/surefire-reports/*.xml'
+                    }
+                    success {
+                        archiveArtifacts (
+                            artifacts: '**/dependency-check-report.html',
+                            fingerprint: true
+                        )
+                    }
                 }
             }
+
+
         }
 
         stage('Build sources') {
