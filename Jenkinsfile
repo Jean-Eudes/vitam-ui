@@ -35,7 +35,16 @@ pipeline {
 //        cron('45 2 * * *')
 //    }
 
-    stages {
+    stages {          
+         
+         /*
+          when {
+                environment(name: 'DO_TEST', value: 'true')
+            }
+            environment {
+                PUPPETEER_DOWNLOAD_HOST="${env.SERVICE_NEXUS_URL}/repository/puppeteer-chrome/"
+                JAVA_TOOL_OPTIONS=""
+            } 
         stage('Activate steps') {
             agent none
             steps {
@@ -72,15 +81,10 @@ pipeline {
                 sh 'node -v;npm -v'
             }
         }
+         */
 
         stage('Check vulnerabilities and tests.') {
-            when {
-                environment(name: 'DO_TEST', value: 'true')
-            }
-            environment {
-                PUPPETEER_DOWNLOAD_HOST="${env.SERVICE_NEXUS_URL}/repository/puppeteer-chrome/"
-                JAVA_TOOL_OPTIONS=""
-            } 
+
             parallel(
                 'Back install and Test': {
                     sh ''' $MVN_COMMAND install -pl !ui,!ui/ui-frontend-common,!ui/ui-frontend,!ui/ui-portal,!ui/ui-identity,!ui/ui-referential '''
@@ -111,9 +115,9 @@ pipeline {
                 }
             )
 
-            stage('Qube Analysis'){
-                // modMaven.sonar_analysis()
-            }
+           //  stage('Qube Analysis'){
+             //    // modMaven.sonar_analysis()
+           //  }
             
            //  post {
              //    always {
