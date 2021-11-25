@@ -114,19 +114,19 @@ pipeline {
             stage('Qube Analysis'){
                 // modMaven.sonar_analysis()
             }
-            /*
-            post {
-                always {
-                    junit '**/target/surefire-reports/*.xml'
-                }
-                success {
-                    archiveArtifacts (
-                        artifacts: '**/dependency-check-report.html',
-                        fingerprint: true
-                    )
-                }
-            }
-           */
+            
+           //  post {
+             //    always {
+              //       junit '**/target/surefire-reports/*.xml'
+               //  }
+             //    success {
+               //      archiveArtifacts (
+                //         artifacts: '**/dependency-check-report.html',
+               //          fingerprint: true
+                //     )
+              //   }
+           //  }
+            
         }
 
         stage('Build sources') {
