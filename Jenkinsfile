@@ -82,8 +82,6 @@ pipeline {
                 JAVA_TOOL_OPTIONS=""
             }
             steps {
-                sh 'node -v'
-                sh 'npmrc default'
                 parallel(
                     'Back install and Test': {
                         sh ''' $MVN_COMMAND install -pl !ui,!ui/ui-frontend-common,!ui/ui-frontend,!ui/ui-portal,!ui/ui-identity,!ui/ui-referential '''
