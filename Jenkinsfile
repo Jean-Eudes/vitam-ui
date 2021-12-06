@@ -63,7 +63,7 @@ pipeline {
                     },
                     'Back install and Ingest API ': {
                         sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f api/api-ingest/pom.xml   '''
-                    }
+                    },
                     'Build and Test Ui Frontend Common': {
                         sh ''' $MVN_COMMAND install -DskipAllFrontendTest -DskipTests=true -Pvitam,sonar-metrics -f ui/ui-frontend-common/pom.xml  '''
                     }
