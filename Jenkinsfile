@@ -65,7 +65,41 @@ pipeline {
                         sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f api/api-ingest/pom.xml   '''
                     },
                     'Build and Test Ui Frontend Common': {
-                        sh ''' $MVN_COMMAND install -DskipAllFrontendTest -DskipTests=true -Pvitam,sonar-metrics -f ui/ui-frontend-common/pom.xml  '''
+                        sh ''' $MVN_COMMAND install -Pdev -f ui/ui-frontend-common/pom.xml  '''
+                    }
+                )
+            }
+        }
+        stage('Ui Frontend') {
+            steps {
+                parallel(
+                    'Front portal': {
+                        sh ''' $MVN_COMMAND verify -Pdev,sonar-metrics -f ui/ui-portal/pom.xml '''
+                    },
+                    'Front identity': {
+                        sh ''' $MVN_COMMAND verify -Pdev,sonar-metrics -f ui/ui-identity/pom.xml '''
+                    },
+                    'Front ingest': {
+                        sh ''' $MVN_COMMAND verify -Pdev,sonar-metrics -f ui/ui-ingest/pom.xml '''
+                    },
+                    'Front archive-search': {
+                        sh ''' $MVN_COMMAND verify -Pdev,sonar-metrics -f ui/ui-archive-search/pom.xml '''
+                    },
+                    'Front referential': {
+                        sh ''' $MVN_COMMAND verify -Pdev,sonar-metrics -f ui/ui-referential/pom.xml '''
+                    }
+                )
+            }
+        }
+/*
+        stage('Ui Frontend') {
+            steps {
+                parallel(
+                    'Build ui parent': {
+                        sh ''' $MVN_COMMAND install -DskipTests=true -DskipAllFrontendTest -Pvitam -f ui/pom.xml -pl !ui-frontend-common,!ui-frontend,!ui-portal,!ui-identity,!ui-referential '''
+                    },
+                    'Build and Test Ui Frontend': {
+                        sh ''' $MVN_COMMAND install -Pvitam -DskipAllFrontendTest -DskipTests=true -f ui/ui-frontend/pom.xml '''
                     }
                 )
             }
@@ -99,6 +133,7 @@ pipeline {
                 )
             }
         }
+        */
         /*
         stage('Build and tests.') {
             steps {
