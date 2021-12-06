@@ -7,16 +7,16 @@ pipeline {
         SLACK_MESSAGE = "${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.RUN_DISPLAY_URL}|Open>)"
         MVN_BASE = "/usr/local/maven/bin/mvn --settings ${pwd()}/.ci/settings.xml"
         MVN_COMMAND = "${MVN_BASE} --show-version --batch-mode --errors --fail-at-end -DinstallAtEnd=true -DdeployAtEnd=true "
-        CI = credentials("app-jenkins")
-        SERVICE_CHECKMARX_URL = credentials("service-checkmarx-url")
-        SERVICE_SONAR_URL = credentials("service-sonar-url")
-        SERVICE_GIT_URL = credentials("service-gitlab-url")
-        SERVICE_NEXUS_URL = credentials("service-nexus-url")
-        SERVICE_PROXY_HOST = credentials("http-proxy-host")
-        SERVICE_PROXY_PORT = credentials("http-proxy-port")
-        NOPROXY_HOST = credentials("http_nonProxyHosts")
-        SERVICE_REPO_SSHURL = credentials("repository-connection-string")
-        SERVICE_REPOSITORY_URL=credentials("service-repository-url")
+        CI = credentials('app-jenkins')
+        SERVICE_CHECKMARX_URL = credentials('service-checkmarx-url')
+        SERVICE_SONAR_URL = credentials('service-sonar-url')
+        SERVICE_GIT_URL = credentials('service-gitlab-url')
+        SERVICE_NEXUS_URL = credentials('service-nexus-url')
+        SERVICE_PROXY_HOST = credentials('http-proxy-host')
+        SERVICE_PROXY_PORT = credentials('http-proxy-port')
+        NOPROXY_HOST = credentials('http_nonProxyHosts')
+        SERVICE_REPO_SSHURL = credentials('repository-connection-string')
+        SERVICE_REPOSITORY_URL = credentials('service-repository-url')
         JAVA_TOOL_OPTIONS = "-Dhttp.proxyHost=${env.SERVICE_PROXY_HOST} -Dhttp.proxyPort=${env.SERVICE_PROXY_PORT} -Dhttps.proxyHost=${env.SERVICE_PROXY_HOST} -Dhttps.proxyPort=${env.SERVICE_PROXY_PORT} -Dhttp.nonProxyHosts=${env.NOPROXY_HOST}"
     }
 
@@ -35,11 +35,42 @@ pipeline {
 //        cron('45 2 * * *')
 //    }
 
+    stages {
 
- stages {
         stage('Build and tests.') {
-              steps {
-            parallel(
+            steps {
+                parallel(
+                    'Back install and Security API': {
+                        sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f api/api-security/pom.xml   '''
+                    },
+                    'Back install and IAM API': {
+                        sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f api/api-iam/pom.xml   '''
+                    },
+                    'Back install and Archive search API ': {
+                        sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f api/api-archive-search/pom.xml   '''
+                    },
+                    'Back install and Referentials API ': {
+                        sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f api/api-referential/pom.xml   '''
+                    },
+                    'Back install and Ingest API ': {
+                        sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f api/api-ingest/pom.xml   '''
+                    }
+     /*               ,
+                    'Back install and Referentials': {
+                        sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -pl !ui,!ui/ui-frontend-common,!ui/ui-frontend,!ui/ui-portal,!ui/ui-identity,!ui/ui-referential '''
+                    },
+                    'Build and Test Ui Frontend Common': {
+                        sh ''' $MVN_COMMAND install -DskipAllFrontendTest -DskipTests=true -Pvitam,sonar-metrics -f ui/ui-frontend-common/pom.xml  '''
+                    }
+                    */
+                )
+            }
+        }
+
+        /*
+        stage('Build and tests.') {
+            steps {
+                parallel(
                     'Back install and Test': {
                         sh ''' $MVN_COMMAND install -Pvitam -pl !ui,!ui/ui-frontend-common,!ui/ui-frontend,!ui/ui-portal,!ui/ui-identity,!ui/ui-referential '''
                     },
@@ -47,11 +78,11 @@ pipeline {
                         sh ''' $MVN_COMMAND install -DskipAllFrontendTest -DskipTests=true -Pvitam -f ui/ui-frontend-common/pom.xml  '''
                     }
                 )
-              }
+            }
         }
         stage('Ui Frontend') {
-              steps {
-            parallel(
+            steps {
+                parallel(
                     'Build ui parent': {
                         sh ''' $MVN_COMMAND install -DskipTests=true -DskipAllFrontendTest -Pvitam -f ui/pom.xml -pl !ui-frontend-common,!ui-frontend,!ui-portal,!ui-identity,!ui-referential '''
                     },
@@ -59,12 +90,12 @@ pipeline {
                         sh ''' $MVN_COMMAND install -Pvitam -DskipAllFrontendTest -DskipTests=true -f ui/ui-frontend/pom.xml '''
                     }
                 )
-              }
-
+            }
         }
-stage('Uis ') {
 
-  steps {
+        */
+        stage('Uis ') {
+            steps {
                 parallel(
                     'Ui identity': {
                         sh ''' $MVN_COMMAND install -Pvitam -f ui/ui-identity/pom.xml '''
@@ -76,14 +107,12 @@ stage('Uis ') {
                         sh ''' $MVN_COMMAND install -Pvitam -f ui/ui-referential/pom.xml  '''
                     }
                 )
-  }
+            }
         }
-
-
 
         stage('Build sources') {
             environment {
-                PUPPETEER_DOWNLOAD_HOST="${env.SERVICE_NEXUS_URL}/repository/puppeteer-chrome/"
+                PUPPETEER_DOWNLOAD_HOST = "${env.SERVICE_NEXUS_URL}/repository/puppeteer-chrome/"
             }
             when {
                 environment(name: 'DO_BUILD', value: 'true')
@@ -98,8 +127,8 @@ stage('Uis ') {
 
         stage('Build COTS') {
             environment {
-                http_proxy="http://${env.SERVICE_PROXY_HOST}:${env.SERVICE_PROXY_PORT}"
-                https_proxy="http://${env.SERVICE_PROXY_HOST}:${env.SERVICE_PROXY_PORT}"
+                http_proxy = "http://${env.SERVICE_PROXY_HOST}:${env.SERVICE_PROXY_PORT}"
+                https_proxy = "http://${env.SERVICE_PROXY_HOST}:${env.SERVICE_PROXY_PORT}"
             }
             when {
                 environment(name: 'DO_BUILD', value: 'true')
@@ -114,7 +143,7 @@ stage('Uis ') {
             }
         }
 
-        stage("Get publishing scripts") {
+        stage('Get publishing scripts') {
             when {
                 environment(name: 'DO_PUBLISH', value: 'true')
                 environment(name: 'DO_BUILD', value: 'true')
@@ -130,7 +159,7 @@ stage('Uis ') {
             }
         }
 
-        stage("Publish rpm and deb") {
+        stage('Publish rpm and deb') {
             when {
                 environment(name: 'DO_PUBLISH', value: 'true')
                 environment(name: 'DO_BUILD', value: 'true')
@@ -143,12 +172,12 @@ stage('Uis ') {
             }
         }
 
-        stage("Update symlink") {
+        stage('Update symlink') {
             when {
                 anyOf {
-                    branch "develop*"
-                    branch "master_*"
-                    tag pattern: "^[1-9]+(\\.rc)?(\\.[0-9]+)?\\.[0-9]+(-.*)?", comparator: "REGEXP"
+                    branch 'develop*'
+                    branch 'master_*'
+                    tag pattern: "^[1-9]+(\\.rc)?(\\.[0-9]+)?\\.[0-9]+(-.*)?", comparator: 'REGEXP'
                 }
                 environment(name: 'DO_PUBLISH', value: 'true')
                 environment(name: 'DO_BUILD', value: 'true')
@@ -160,18 +189,18 @@ stage('Uis ') {
             }
         }
 
-        stage("Checkmarx analysis") {
+        stage('Checkmarx analysis') {
             when {
                 anyOf {
-                    branch "develop*"
-                    branch "master_*"
-                    branch "master"
-                    tag pattern: "^[1-9]+(\\.rc)?(\\.[0-9]+)?\\.[0-9]+(-.*)?", comparator: "REGEXP"
+                    branch 'develop*'
+                    branch 'master_*'
+                    branch 'master'
+                    tag pattern: "^[1-9]+(\\.rc)?(\\.[0-9]+)?\\.[0-9]+(-.*)?", comparator: 'REGEXP'
                 }
                 environment(name: 'DO_CHECKMARX', value: 'true')
             }
             environment {
-                JAVA_TOOL_OPTIONS = ""
+                JAVA_TOOL_OPTIONS = ''
             }
             steps {
                 dir('vitam-build.git') {
