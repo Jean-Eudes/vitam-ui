@@ -36,6 +36,7 @@ pipeline {
 //    }
 
     stages {
+        /*
         stage('Build common.') {
             steps {
                 parallel(
@@ -45,13 +46,13 @@ pipeline {
                 )
             }
         }
-
+*/
         stage('Build and tests.') {
             steps {
                 parallel(
-                    'Back install and Security API': {
-                        sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f api/api-security/pom.xml   '''
-                    },
+                    'Back verify': {
+                        sh ''' $MVN_COMMAND verify -Psonar-metrics -pl \\!ui,\\!ui/ui-portal,\\!ui/ui-identity,\\!ui/ui-frontend,\\!ui/ui-frontend-common  '''
+                    }/*,
                     'Back install and IAM API': {
                         sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f api/api-iam/pom.xml   '''
                     },
@@ -63,10 +64,11 @@ pipeline {
                     },
                     'Back install and Ingest API ': {
                         sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f api/api-ingest/pom.xml   '''
-                    },
+                    },*/
                     'Build and Test Ui Frontend Common': {
                         sh ''' $MVN_COMMAND install -Pdev -f ui/ui-frontend-common/pom.xml  '''
                     }
+
                 )
             }
         }
