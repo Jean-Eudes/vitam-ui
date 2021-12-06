@@ -64,31 +64,13 @@ pipeline {
                     'Back install and Ingest API ': {
                         sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f api/api-ingest/pom.xml   '''
                     }
-     /*               ,
-                    'Back install and Referentials': {
-                        sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -pl !ui,!ui/ui-frontend-common,!ui/ui-frontend,!ui/ui-portal,!ui/ui-identity,!ui/ui-referential '''
-                    },
                     'Build and Test Ui Frontend Common': {
                         sh ''' $MVN_COMMAND install -DskipAllFrontendTest -DskipTests=true -Pvitam,sonar-metrics -f ui/ui-frontend-common/pom.xml  '''
                     }
-                    */
                 )
             }
         }
 
-        /*
-        stage('Build and tests.') {
-            steps {
-                parallel(
-                    'Back install and Test': {
-                        sh ''' $MVN_COMMAND install -Pvitam -pl !ui,!ui/ui-frontend-common,!ui/ui-frontend,!ui/ui-portal,!ui/ui-identity,!ui/ui-referential '''
-                    },
-                    'Build and Test Ui Frontend Common': {
-                        sh ''' $MVN_COMMAND install -DskipAllFrontendTest -DskipTests=true -Pvitam -f ui/ui-frontend-common/pom.xml  '''
-                    }
-                )
-            }
-        }
         stage('Ui Frontend') {
             steps {
                 parallel(
@@ -102,7 +84,6 @@ pipeline {
             }
         }
 
-        */
         stage('Uis ') {
             steps {
                 parallel(
@@ -118,6 +99,21 @@ pipeline {
                 )
             }
         }
+        /*
+        stage('Build and tests.') {
+            steps {
+                parallel(
+                    'Back install and Test': {
+                        sh ''' $MVN_COMMAND install -Pvitam -pl !ui,!ui/ui-frontend-common,!ui/ui-frontend,!ui/ui-portal,!ui/ui-identity,!ui/ui-referential '''
+                    },
+                    'Build and Test Ui Frontend Common': {
+                        sh ''' $MVN_COMMAND install -DskipAllFrontendTest -DskipTests=true -Pvitam -f ui/ui-frontend-common/pom.xml  '''
+                    }
+                )
+            }
+        }
+
+        */
 
         stage('Build sources') {
             environment {
