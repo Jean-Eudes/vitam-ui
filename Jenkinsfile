@@ -36,6 +36,15 @@ pipeline {
 //    }
 
     stages {
+        stage('Build common.') {
+            steps {
+                parallel(
+                    'Common': {
+                         sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f commons/pom.xml   '''
+                    }
+                )
+            }
+        }
 
         stage('Build and tests.') {
             steps {
