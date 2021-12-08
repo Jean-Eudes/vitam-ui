@@ -51,7 +51,7 @@ pipeline {
             steps {
                 parallel(
                     'Back verify': {
-                        sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -pl "!ui,!ui/ui-portal,!ui/ui-identity,!ui/ui-frontend,!ui/ui-frontend-common" '''
+                        sh ''' $MVN_COMMAND verify -Psonar,vitam -pl "!ui,!ui/ui-portal,!ui/ui-identity,!ui/ui-frontend,!ui/ui-frontend-common" '''
                     }/*,
                     'Back install and IAM API': {
                         sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f api/api-iam/pom.xml   '''
@@ -66,7 +66,7 @@ pipeline {
                         sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f api/api-ingest/pom.xml   '''
                     }*/,
                     'Build and Test Ui Frontend Common': {
-                        sh ''' $MVN_COMMAND install -Pdev -f ui/ui-frontend-common/pom.xml  '''
+                        sh ''' $MVN_COMMAND install -Pvitam -f ui/ui-frontend-common/pom.xml  '''
                     }
 
                 )
