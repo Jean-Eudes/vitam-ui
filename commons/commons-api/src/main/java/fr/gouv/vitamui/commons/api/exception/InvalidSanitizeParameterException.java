@@ -59,6 +59,14 @@ public class InvalidSanitizeParameterException extends VitamUIException {
     }
 
     /**
+     * @param exception
+     * the exception
+     */
+    public InvalidSanitizeParameterException(final Throwable exception) {
+        super(exception);
+    }
+
+    /**
      * @param message
      *            the message
      */
@@ -66,4 +74,7 @@ public class InvalidSanitizeParameterException extends VitamUIException {
         super(message, key);
     }
 
+    public InvalidSanitizeParameterException(String arg0, Throwable arg1) {
+        super(arg0, arg1);
+    }
 }

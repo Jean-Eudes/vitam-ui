@@ -40,6 +40,7 @@ import fr.gouv.vitamui.archives.search.external.server.service.ArchivesSearchExt
 import fr.gouv.vitamui.commons.api.domain.IdDto;
 import fr.gouv.vitamui.commons.api.domain.ServicesData;
 import fr.gouv.vitamui.commons.api.exception.InvalidSanitizeCriteriaException;
+import fr.gouv.vitamui.commons.api.exception.InvalidSanitizeParameterException;
 import fr.gouv.vitamui.commons.api.logger.VitamUILogger;
 import fr.gouv.vitamui.commons.api.logger.VitamUILoggerFactory;
 import fr.gouv.vitamui.commons.vitam.api.dto.VitamUISearchResponseDto;
@@ -159,7 +160,7 @@ public class ArchivesSearchExternalControllerTest extends ApiArchiveSearchExtern
             .thenReturn(expectedResponse);
 
         assertThatCode(() -> archivesSearchExternalController.searchArchiveUnitsByCriteria(query))
-            .isInstanceOf(InvalidSanitizeCriteriaException.class);
+            .isInstanceOf(InvalidSanitizeParameterException.class);
     }
 
     @Test

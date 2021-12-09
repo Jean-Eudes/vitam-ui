@@ -58,9 +58,9 @@ public class SanityCheckerTest {
     }
 
 
-    @Test(expected = InvalidParseOperationException.class)
+    @Test(expected = InvalidSanitizeParameterException.class)
     public void givenJsonWhenValueIsTooBigORContainXMLTag()
-        throws InvalidParseOperationException, IOException {
+        throws InvalidParseOperationException, InvalidSanitizeParameterException, FileNotFoundException {
         final File file = PropertiesUtils.findFile(TEST_BAD_JSON);
         final JsonNode json = JsonHandler.getFromFile(file);
         assertNotNull(json);
@@ -106,13 +106,13 @@ public class SanityCheckerTest {
     }
 
     @Test
-    public void givenStringGoodSanity() throws InvalidParseOperationException {
+    public void givenStringGoodSanity() throws InvalidSanitizeParameterException {
         final String good = "abcdef";
         SanityChecker.checkParameter(good);
     }
 
-    @Test(expected = InvalidParseOperationException.class)
-    public void givenStringBadSize() throws InvalidParseOperationException {
+    @Test(expected = InvalidSanitizeParameterException.class)
+    public void givenStringBadSize() throws InvalidSanitizeParameterException {
         final int limit = SanityChecker.getLimitParamSize();
         try {
             final String bad = new String(StringUtils.getRandom(40));
@@ -123,32 +123,32 @@ public class SanityCheckerTest {
         }
     }
 
-    @Test(expected = InvalidParseOperationException.class)
-    public void givenStringScript() throws InvalidParseOperationException {
+    @Test(expected = InvalidSanitizeParameterException.class)
+    public void givenStringScript() throws InvalidSanitizeParameterException {
         final String bad = "aa<script>bb";
         SanityChecker.checkParameter(bad);
     }
 
-    @Test(expected = InvalidParseOperationException.class)
-    public void givenStringCdata() throws InvalidParseOperationException {
+    @Test(expected = InvalidSanitizeParameterException.class)
+    public void givenStringCdata() throws InvalidSanitizeParameterException {
         final String bad = "aa<![CDATA[bb";
         SanityChecker.checkParameter(bad);
     }
 
-    @Test(expected = InvalidParseOperationException.class)
-    public void givenStringEntity() throws InvalidParseOperationException {
+    @Test(expected = InvalidSanitizeParameterException.class)
+    public void givenStringEntity() throws InvalidSanitizeParameterException {
         final String bad = "aa<!ENTITYbb";
         SanityChecker.checkParameter(bad);
     }
 
-    @Test(expected = InvalidParseOperationException.class)
-    public void givenStringXml() throws InvalidParseOperationException {
+    @Test(expected = InvalidSanitizeParameterException.class)
+    public void givenStringXml() throws InvalidSanitizeParameterException {
         final String bad = "aa<strong>bb</strong>bb";
         SanityChecker.checkParameter(bad);
     }
 
-    @Test(expected = InvalidParseOperationException.class)
-    public void givenStringNotPrintable() throws InvalidParseOperationException {
+    @Test(expected = InvalidSanitizeParameterException.class)
+    public void givenStringNotPrintable() throws InvalidSanitizeParameterException {
         final String bad = "aa\u0003bb";
         SanityChecker.checkParameter(bad);
     }

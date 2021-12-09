@@ -34,6 +34,8 @@ import fr.gouv.vitamui.archives.search.common.dto.ArchiveUnitsDto;
 import fr.gouv.vitamui.archives.search.common.dto.ExportDipCriteriaDto;
 import fr.gouv.vitamui.archives.search.common.dto.RuleSearchCriteriaDto;
 import fr.gouv.vitamui.archives.search.common.dto.SearchCriteriaDto;
+import fr.gouv.vitamui.common.security.SanityChecker;
+import fr.gouv.vitamui.commons.api.exception.InvalidSanitizeParameterException;
 import fr.gouv.vitamui.commons.vitam.api.dto.ResultsDto;
 import fr.gouv.vitamui.commons.vitam.api.dto.VitamUISearchResponseDto;
 import fr.gouv.vitamui.iam.security.client.AbstractResourceClientService;
@@ -80,11 +82,17 @@ public class ArchivesSearchExternalService extends AbstractResourceClientService
         return getClient().searchArchiveUnitsByCriteria(getInternalHttpContext(), query);
     }
 
-    public ResponseEntity<ResultsDto> findUnitById(String id) {
-        return archiveInternalRestClient.findUnitById(id, getInternalHttpContext());
+    public ResponseEntity<ResultsDto> findUnitById(String id) throws InvalidSanitizeParameterException {
+        try {
+            SanityChecker.checkParameter(id);
+            return archiveInternalRestClient.findUnitById(id, getInternalHttpContext());
+        } catch (InvalidSanitizeParameterException e) {
+            throw new InvalidSanitizeParameterException(e);
+        }
     }
 
     public ResponseEntity<ResultsDto> findObjectById(String id) {
+        SanityChecker.checkParameter(id);
         return archiveInternalRestClient.findObjectById(id, getInternalHttpContext());
     }
 

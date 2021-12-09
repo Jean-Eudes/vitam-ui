@@ -59,6 +59,15 @@ public class InvalidSanitizeCriteriaException extends VitamUIException {
     }
 
     /**
+     * @param exception
+     * @param message
+     * the exception
+     */
+    public InvalidSanitizeCriteriaException(final String message, final Throwable exception) {
+        super(message, exception);
+    }
+
+    /**
      * @param message
      *            the message
      */

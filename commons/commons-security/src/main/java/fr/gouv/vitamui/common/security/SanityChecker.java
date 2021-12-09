@@ -178,7 +178,7 @@ public class SanityChecker {
      * @param params
      * @throws InvalidParseOperationException
      */
-    public static void checkParameter(String... params) throws InvalidParseOperationException {
+    public static void checkParameter(String... params) throws InvalidSanitizeParameterException {
         for (final String param : params) {
             checkParam(param);
         }
@@ -189,7 +189,7 @@ public class SanityChecker {
             for (final String id : ids) {
                 SanityChecker.checkParameter(id);
             }
-        } catch (final InvalidParseOperationException e) {
+        } catch (final InvalidSanitizeParameterException e) {
             throw new InvalidSanitizeParameterException(INVALID_IDENTIFIER_SANITIZE + Arrays.toString(ids));
         }
     }
@@ -229,13 +229,13 @@ public class SanityChecker {
         try {
             checkParam(param);
             return false;
-        } catch (final InvalidParseOperationException e) {
+        } catch (final InvalidSanitizeParameterException e) {
             SysErrLogger.FAKE_LOGGER.ignoreLog(e);
             return true;
         }
     }
 
-    private static void checkParam(String param) throws InvalidParseOperationException {
+    private static void checkParam(String param) throws InvalidSanitizeParameterException {
         checkSanityTags(param, getLimitParamSize());
         checkHtmlPattern(param);
     }
@@ -277,7 +277,7 @@ public class SanityChecker {
      * @param line line to check
      * @throws InvalidParseOperationException when Sanity Check is in error
      */
-    private static void checkXmlSanityTags(String line) throws InvalidParseOperationException {
+    private static void checkXmlSanityTags(String line) throws InvalidSanitizeParameterException {
         for (final String rule : StringUtils.RULES) {
             checkSanityTags(line, rule);
         }
@@ -290,7 +290,7 @@ public class SanityChecker {
      * @param limit limit size
      * @throws InvalidParseOperationException when Sanity Check is in error
      */
-    private static void checkSanityTags(String line, int limit) throws InvalidParseOperationException {
+    private static void checkSanityTags(String line, int limit) throws InvalidSanitizeParameterException {
         checkSanityEsapi(line, limit);
         checkXmlSanityTags(line);
     }
@@ -302,12 +302,12 @@ public class SanityChecker {
      * @param limit limit size
      * @throws InvalidParseOperationException when Sanity Check is in error
      */
-    private static void checkSanityEsapi(String line, int limit) throws InvalidParseOperationException {
+    private static void checkSanityEsapi(String line, int limit) throws InvalidSanitizeParameterException {
         if (line.length() > limit) {
-            throw new InvalidParseOperationException("Invalid input bytes length");
+            throw new InvalidSanitizeParameterException("Invalid input bytes length");
         }
         if (StringUtils.UNPRINTABLE_PATTERN.matcher(line).find()) {
-            throw new InvalidParseOperationException("Invalid input bytes");
+            throw new InvalidSanitizeParameterException("Invalid input bytes");
         }
         // ESAPI.getValidPrintable Not OK
         // Issue with integration of ESAPI
@@ -315,9 +315,9 @@ public class SanityChecker {
             ESAPI.getValidSafeHTML("CheckSafeHtml", line, limit, true);
         } catch (final NoClassDefFoundError e) {
             // Ignore
-            throw new InvalidParseOperationException("Invalid ESAPI sanity check", e);
+            throw new InvalidSanitizeParameterException("Invalid ESAPI sanity check" , e.getMessage());
         } catch (ValidationException | IntrusionException e) {
-            throw new InvalidParseOperationException("Invalid ESAPI sanity check", e);
+            throw new InvalidSanitizeParameterException("Invalid ESAPI sanity check", e.getMessage());
         }
     }
 
@@ -328,9 +328,9 @@ public class SanityChecker {
      * @throws InvalidParseOperationException when Sanity Check is in error
      */
     private static void checkSanityTags(String dataLine, String invalidTag)
-        throws InvalidParseOperationException {
+        throws InvalidSanitizeParameterException {
         if (dataLine != null && invalidTag != null && dataLine.contains(invalidTag)) {
-            throw new InvalidParseOperationException("Invalid tag sanity check");
+            throw new InvalidSanitizeParameterException("Invalid tag sanity check");
         }
     }
 
@@ -340,9 +340,9 @@ public class SanityChecker {
      * @param param
      * @throws InvalidParseOperationException when Sanity Check is in error
      */
-    private static void checkHtmlPattern(String param) throws InvalidParseOperationException {
+    private static void checkHtmlPattern(String param) throws InvalidSanitizeParameterException {
         if (StringUtils.HTML_PATTERN.matcher(param).find()) {
-            throw new InvalidParseOperationException("HTML PATTERN found");
+            throw new InvalidSanitizeParameterException("HTML PATTERN found");
         }
     }
 
@@ -392,7 +392,8 @@ public class SanityChecker {
         }
     }
 
-    private static void validateJSONField(JsonNode value) throws InvalidParseOperationException {
+    private static void validateJSONField(JsonNode value)
+        throws InvalidSanitizeParameterException, InvalidParseOperationException {
         final String svalue = JsonHandler.writeAsString(value);
         checkSanityTags(svalue, getLimitFieldSize());
         checkHtmlPattern(svalue);

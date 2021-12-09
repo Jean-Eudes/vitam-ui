@@ -28,6 +28,7 @@ package fr.gouv.vitamui.archives.search.external.server.rest;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
+import fr.gouv.vitam.common.exception.InvalidParseOperationException;
 import fr.gouv.vitamui.archives.search.common.dto.ArchiveUnitsDto;
 import fr.gouv.vitamui.archives.search.common.dto.ExportDipCriteriaDto;
 import fr.gouv.vitamui.archives.search.common.dto.RuleSearchCriteriaDto;
@@ -38,6 +39,8 @@ import fr.gouv.vitamui.common.security.SanityChecker;
 import fr.gouv.vitamui.commons.api.CommonConstants;
 import fr.gouv.vitamui.commons.api.ParameterChecker;
 import fr.gouv.vitamui.commons.api.domain.ServicesData;
+import fr.gouv.vitamui.commons.api.exception.InvalidSanitizeCriteriaException;
+import fr.gouv.vitamui.commons.api.exception.InvalidSanitizeParameterException;
 import fr.gouv.vitamui.commons.api.logger.VitamUILogger;
 import fr.gouv.vitamui.commons.api.logger.VitamUILoggerFactory;
 import fr.gouv.vitamui.commons.vitam.api.dto.ResultsDto;
@@ -105,36 +108,69 @@ public class ArchivesSearchExternalController {
 
     @GetMapping(RestApi.ARCHIVE_UNIT_INFO + CommonConstants.PATH_ID)
     @Secured(ServicesData.ROLE_GET_ARCHIVE)
-    public ResponseEntity<ResultsDto> findUnitById(final @PathVariable("id") String id) {
-        LOGGER.info("the UA by id {} ", id);
-        ParameterChecker.checkParameter("The Identifier is a mandatory parameter: ", id);
-        return archivesSearchExternalService.findUnitById(id);
+    public ResponseEntity<ResultsDto> findUnitById(final @PathVariable("id") String id)
+        throws InvalidSanitizeParameterException {
+
+        try {
+            LOGGER.debug("the UA by id {} ", id);
+            ParameterChecker.checkParameter("The Identifier is a mandatory parameter: ", id);
+            SanityChecker.checkParameter(id);
+            return archivesSearchExternalService.findUnitById(id);
+        } catch (InvalidSanitizeParameterException e ) {
+            LOGGER.debug("Error in checking Id : {}", e.getMessage());
+            throw new InvalidSanitizeParameterException(e);
+        }
+
     }
 
     @GetMapping(RestApi.OBJECTGROUP + CommonConstants.PATH_ID)
     @Secured(ServicesData.ROLE_GET_ARCHIVE)
-    public ResponseEntity<ResultsDto> findObjectById(final @PathVariable("id") String id) {
-        LOGGER.info("Find a ObjectGroup by id {} ", id);
-        ParameterChecker.checkParameter("The Identifier is a mandatory parameter: ", id);
-        return archivesSearchExternalService.findObjectById(id);
+    public ResponseEntity<ResultsDto> findObjectById(final @PathVariable("id") String id)
+        throws InvalidSanitizeParameterException {
+
+        try {
+           //LOGGER.debug("Find a ObjectGroup by id {} ", id);
+           ParameterChecker.checkParameter("The Identifier is a mandatory parameter: ", id);
+           SanityChecker.checkParameter(id);
+           return archivesSearchExternalService.findObjectById(id);
+       } catch (InvalidSanitizeParameterException e) {
+            LOGGER.debug("Error in checking Id : {}", e.getMessage());
+           throw new InvalidSanitizeParameterException(e);
+       }
+
     }
 
     @PostMapping(RestApi.EXPORT_CSV_SEARCH_PATH)
     @Secured(ServicesData.ROLE_GET_ARCHIVE)
-    public Resource exportCsvArchiveUnitsByCriteria(final @RequestBody SearchCriteriaDto query) {
-        LOGGER.info("Calling export to csv search archive Units By Criteria {} ", query);
-        ParameterChecker.checkParameter("The query is a mandatory parameter: ", query);
-        SanityChecker.sanitizeCriteria(query);
-        return archivesSearchExternalService.exportCsvArchiveUnitsByCriteria(query);
+    public Resource exportCsvArchiveUnitsByCriteria(final @RequestBody SearchCriteriaDto query) throws
+        InvalidSanitizeCriteriaException {
+
+        try {
+            LOGGER.info("Calling export to csv search archive Units By Criteria {} ", query);
+            ParameterChecker.checkParameter("The query is a mandatory parameter: ", query);
+            SanityChecker.sanitizeCriteria(query);
+            return archivesSearchExternalService.exportCsvArchiveUnitsByCriteria(query);
+        } catch(InvalidSanitizeCriteriaException e) {
+            LOGGER.debug("error with export CSV criteria : {}", e.getMessage());
+            throw new InvalidSanitizeCriteriaException("error with export CSV criteria" , e);
+        }
+
     }
 
     @PostMapping(RestApi.EXPORT_DIP)
     @Secured(ServicesData.ROLE_EXPORT_DIP)
-    public String exportDIPByCriteria(final @RequestBody ExportDipCriteriaDto exportDipCriteriaDto) {
-        LOGGER.info("Calling export DIP By Criteria {} ", exportDipCriteriaDto);
-        ParameterChecker.checkParameter("The query is a mandatory parameter: ", exportDipCriteriaDto);
-        SanityChecker.sanitizeCriteria(exportDipCriteriaDto);
-        return archivesSearchExternalService.exportDIPByCriteria(exportDipCriteriaDto);
+    public String exportDIPByCriteria(final @RequestBody ExportDipCriteriaDto exportDipCriteriaDto) throws InvalidSanitizeCriteriaException{
+
+        try {
+            LOGGER.info("Calling export DIP By Criteria {} ", exportDipCriteriaDto);
+            ParameterChecker.checkParameter("The query is a mandatory parameter: ", exportDipCriteriaDto);
+            SanityChecker.sanitizeCriteria(exportDipCriteriaDto);
+            return archivesSearchExternalService.exportDIPByCriteria(exportDipCriteriaDto);
+        } catch (InvalidSanitizeCriteriaException e) {
+            LOGGER.debug("error with export DIP criteria : {}", e.getMessage());
+            throw new InvalidSanitizeCriteriaException("error with export DIP criteria" , e);
+        }
+
     }
 
     @PostMapping(RestApi.ELIMINATION_ANALYSIS)
@@ -149,10 +185,16 @@ public class ArchivesSearchExternalController {
     @PostMapping(RestApi.ELIMINATION_ACTION)
     @Secured(ServicesData.ROLE_ELIMINATION)
     public ResponseEntity<JsonNode> startEliminationAction(final @RequestBody SearchCriteriaDto query) {
-        LOGGER.info("Calling elimination action by criteria {} ", query);
-        ParameterChecker.checkParameter("The query is a mandatory parameter: ", query);
-        SanityChecker.sanitizeCriteria(query);
-        return archivesSearchExternalService.startEliminationAction(query);
+
+        try {
+            LOGGER.info("Calling elimination action by criteria {} ", query);
+            ParameterChecker.checkParameter("The query is a mandatory parameter: ", query);
+            SanityChecker.sanitizeCriteria(query);
+            return archivesSearchExternalService.startEliminationAction(query);
+        } catch (InvalidSanitizeCriteriaException e) {
+        LOGGER.debug("error with elimination action criteria : {}", e.getMessage());
+        throw new InvalidSanitizeCriteriaException("error with elimination action criteria" , e);
+    }
     }
 
     @PostMapping(RestApi.MASS_UPDATE_UNITS_RULES)
