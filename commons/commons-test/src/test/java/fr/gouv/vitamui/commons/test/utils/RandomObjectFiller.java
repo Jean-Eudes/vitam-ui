@@ -2,12 +2,12 @@ package fr.gouv.vitamui.commons.test.utils;
 
 import java.lang.reflect.Field;
 import java.math.BigInteger;
-import java.util.Random;
+import java.security.SecureRandom;
 import java.util.UUID;
 
 public class RandomObjectFiller {
 
-    private static Random random = new Random();
+    private static SecureRandom random = new SecureRandom();
 
     private RandomObjectFiller() {
         // do nothing
