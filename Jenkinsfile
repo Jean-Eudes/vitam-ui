@@ -77,7 +77,7 @@ pipeline {
                         sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f api/api-ingest/pom.xml   '''
                     }*/,
                     'Build and Test Ui Frontend Common': {
-                        sh ''' $MVN_COMMAND install -Pvitam -f ui/ui-frontend-common/pom.xml  '''
+                        sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -f ui/ui-frontend-common/pom.xml  '''
                     }
 
                     /*
