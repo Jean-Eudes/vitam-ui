@@ -36,22 +36,33 @@ pipeline {
 //    }
 
     stages {
-        /*
         stage('Build common.') {
             steps {
                 parallel(
                     'Common': {
-                         sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f commons/pom.xml   '''
+                         sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -f commons/pom.xml '''
                     }
                 )
             }
         }
-*/
+
         stage('Build and tests.') {
             steps {
                 parallel(
-                    'Back verify': {
-                        sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -pl "!ui,!ui/ui-portal,!ui/ui-ingest,!ui/ui-archive-search,!ui/ui-identity,!ui/ui-referential,!ui/ui-frontend,!ui/ui-frontend-common, !cots, !integration-tests" '''
+                    'Iam verify': {
+                        sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -f api/api-iam/pom.xml '''
+                    },
+                     'Archive-search verify': {
+                        sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -f api/api-archive-search/pom.xml '''
+                    },
+                     'referential verify': {
+                        sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -f api/api-referential/pom.xml '''
+                    },
+                     'ingest verify': {
+                        sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -f api/api-ingest/pom.xml '''
+                    },
+                     'Security verify': {
+                        sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -f api/api-security/pom.xml '''
                     }/*,
                     'Back install and IAM API': {
                         sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f api/api-iam/pom.xml   '''
@@ -69,6 +80,17 @@ pipeline {
                         sh ''' $MVN_COMMAND install -Pvitam -f ui/ui-frontend-common/pom.xml  '''
                     }
 
+                    /*
+                    Cette pipeline fonctionne globalement en //
+
+                    'Build and Test Ui Frontend Common': {
+                        sh ''' $MVN_COMMAND install -Pvitam -f ui/ui-frontend-common/pom.xml  '''
+                    },
+                    'Build and Test Ui Frontend Common': {
+                        sh ''' $MVN_COMMAND install -Pvitam -f ui/ui-frontend-common/pom.xml  '''
+                    }
+
+                    */
                 )
             }
         }
