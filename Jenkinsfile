@@ -36,7 +36,50 @@ pipeline {
 //    }
 
     stages {
+          stage('Activate steps') {
+            agent none
+            steps {
+                script {
+                    env.DO_MAJ_CONTEXT = 'true'
+                    env.DO_TEST = 'true'
+                    env.DO_BUILD = 'true'
+                    env.DO_PUBLISH = 'true'
+                    env.DO_CHECKMARX = 'false'
+                }
+            }
+        }
+
+        stage('Upgrade build context') {
+	    when {
+                environment(name: 'DO_MAJ_CONTEXT', value: 'true')
+            }
+            environment {
+                NODE_JS_DOWNLOAD_URL="https://rpm.nodesource.com/setup_16.x"
+                http_proxy="http://${env.SERVICE_PROXY_HOST}:${env.SERVICE_PROXY_PORT}"
+                https_proxy="http://${env.SERVICE_PROXY_HOST}:${env.SERVICE_PROXY_PORT}"
+            }
+            steps {
+                sh 'sudo yum install -y gcc-c++ make'
+                sh 'sudo yum remove -y nodejs'
+                sh 'curl -sL https://rpm.nodesource.com/setup_16.x | sudo -E bash -'
+          //      sh 'sudo yum install -y nodejs'
+                sh 'sudo yum install -y nodejs-16.9.0-1nodesource'
+                sh 'node -v'
+                sh '/usr/bin/node -v'
+                sh 'npm -v'
+                sh 'sudo rm /usr/local/bin/node || true'
+                sh 'sudo rm /usr/local/bin/npm || true'
+                sh 'node -v;npm -v'
+            }
+        }
         stage('Build common.') {
+             when {
+                environment(name: 'DO_TEST', value: 'true')
+            }
+            environment {
+                PUPPETEER_DOWNLOAD_HOST="${env.SERVICE_NEXUS_URL}/repository/puppeteer-chrome/"
+                JAVA_TOOL_OPTIONS=""
+            }
             steps {
                 parallel(
                     'Common': {
@@ -47,6 +90,13 @@ pipeline {
         }
 
         stage('Build and tests.') {
+             when {
+                environment(name: 'DO_TEST', value: 'true')
+            }
+            environment {
+                PUPPETEER_DOWNLOAD_HOST="${env.SERVICE_NEXUS_URL}/repository/puppeteer-chrome/"
+                JAVA_TOOL_OPTIONS=""
+            }
             steps {
                 parallel(
                     'Apis verify': {
