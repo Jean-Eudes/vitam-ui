@@ -53,7 +53,9 @@ pipeline {
                         sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -f api/pom.xml '''
                     },
                     'Build and Test Ui Frontend Common': {
-                        sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -f ui/ui-frontend-common/pom.xml  '''
+                        sh 'node -v'
+                        sh 'npmrc default'
+                        sh ''' $MVN_COMMAND clean verify  -Pvitam -f ui/ui-frontend-common/pom.xml  '''
                     }
 
                     /*
