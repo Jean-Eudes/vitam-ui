@@ -49,33 +49,9 @@ pipeline {
         stage('Build and tests.') {
             steps {
                 parallel(
-                    'Iam verify': {
-                        sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -f api/api-iam/pom.xml '''
+                    'Apis verify': {
+                        sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -f api/pom.xml '''
                     },
-                     'Archive-search verify': {
-                        sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -f api/api-archive-search/pom.xml '''
-                    },
-                     'referential verify': {
-                        sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -f api/api-referential/pom.xml '''
-                    },
-                     'ingest verify': {
-                        sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -f api/api-ingest/pom.xml '''
-                    },
-                     'Security verify': {
-                        sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -f api/api-security/pom.xml '''
-                    }/*,
-                    'Back install and IAM API': {
-                        sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f api/api-iam/pom.xml   '''
-                    },
-                    'Back install and Archive search API ': {
-                        sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f api/api-archive-search/pom.xml   '''
-                    },
-                    'Back install and Referentials API ': {
-                        sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f api/api-referential/pom.xml   '''
-                    },
-                    'Back install and Ingest API ': {
-                        sh ''' $MVN_COMMAND install -P vitam,sonar-metrics -f api/api-ingest/pom.xml   '''
-                    }*/,
                     'Build and Test Ui Frontend Common': {
                         sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -f ui/ui-frontend-common/pom.xml  '''
                     }
