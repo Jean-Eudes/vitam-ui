@@ -126,6 +126,18 @@ pipeline {
                 PUPPETEER_DOWNLOAD_HOST="${env.SERVICE_NEXUS_URL}/repository/puppeteer-chrome/"
                 JAVA_TOOL_OPTIONS=""
             }
+            steps {            
+                   sh ''' $MVN_COMMAND verify -Pvitam,sonar-metrics -f ui/ui-frontend/pom.xml '''                     
+            }
+        }
+        stage('Uis') {
+            when {
+                environment(name: 'DO_TEST', value: 'true')
+            }
+            environment {
+                PUPPETEER_DOWNLOAD_HOST="${env.SERVICE_NEXUS_URL}/repository/puppeteer-chrome/"
+                JAVA_TOOL_OPTIONS=""
+            }
             steps {
                 parallel(
                     'Front portal': {
