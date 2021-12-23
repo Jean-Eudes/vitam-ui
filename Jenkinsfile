@@ -72,6 +72,7 @@ pipeline {
                 sh 'node -v;npm -v'
             }
         }
+        /*
         stage('Build common.') {
              when {
                 environment(name: 'DO_TEST', value: 'true')
@@ -88,7 +89,7 @@ pipeline {
                 )
             }
         }
-
+*/
         stage('Build and tests.') {
              when {
                 environment(name: 'DO_TEST', value: 'true')
@@ -99,26 +100,16 @@ pipeline {
             }
             steps {
                 parallel(
-                    'Apis verify': {
-                        sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -f api/pom.xml '''
+                    'Build and Test Apis': {
+                      //  sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -f api/pom.xml '''
+
+                        sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam  -pl \\!integration-tests, \\!ui,\\!ui/ui-portal,\\!ui/ui-identity,\\!ui/ui-frontend,\\!ui/ui-frontend-common,\\!ui/ui-ingest,\\!ui/ui-archive-search ,\\!ui/ui-referential '''
                     },
                     'Build and Test Ui Frontend Common': {
                         sh 'node -v'
                         sh 'npmrc default'
-                        sh ''' $MVN_COMMAND clean verify  -Pvitam -f ui/ui-frontend-common/pom.xml  '''
+                        sh ''' $MVN_COMMAND clean verify  -Psonar-metrics,vitam -f ui/ui-frontend-common/pom.xml  '''
                     }
-
-                    /*
-                    Cette pipeline fonctionne globalement en //
-
-                    'Build and Test Ui Frontend Common': {
-                        sh ''' $MVN_COMMAND install -Pvitam -f ui/ui-frontend-common/pom.xml  '''
-                    },
-                    'Build and Test Ui Frontend Common': {
-                        sh ''' $MVN_COMMAND install -Pvitam -f ui/ui-frontend-common/pom.xml  '''
-                    }
-
-                    */
                 )
             }
         }
@@ -126,19 +117,19 @@ pipeline {
             steps {
                 parallel(
                     'Front portal': {
-                        sh ''' $MVN_COMMAND verify -Pdev,sonar-metrics -f ui/ui-portal/pom.xml '''
+                        sh ''' $MVN_COMMAND verify -Pvitam,sonar-metrics -f ui/ui-portal/pom.xml '''
                     },
                     'Front identity': {
-                        sh ''' $MVN_COMMAND verify -Pdev,sonar-metrics -f ui/ui-identity/pom.xml '''
+                        sh ''' $MVN_COMMAND verify -Pvitam,sonar-metrics -f ui/ui-identity/pom.xml '''
                     },
                     'Front ingest': {
-                        sh ''' $MVN_COMMAND verify -Pdev,sonar-metrics -f ui/ui-ingest/pom.xml '''
+                        sh ''' $MVN_COMMAND verify -Pvitam,sonar-metrics -f ui/ui-ingest/pom.xml '''
                     },
                     'Front archive-search': {
-                        sh ''' $MVN_COMMAND verify -Pdev,sonar-metrics -f ui/ui-archive-search/pom.xml '''
+                        sh ''' $MVN_COMMAND verify -Pvitam,sonar-metrics -f ui/ui-archive-search/pom.xml '''
                     },
                     'Front referential': {
-                        sh ''' $MVN_COMMAND verify -Pdev,sonar-metrics -f ui/ui-referential/pom.xml '''
+                        sh ''' $MVN_COMMAND verify -Pvitam,sonar-metrics -f ui/ui-referential/pom.xml '''
                     }
                 )
             }
