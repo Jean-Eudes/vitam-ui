@@ -103,7 +103,7 @@ pipeline {
                     'Build and Test Apis': {
                       //  sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam -f api/pom.xml '''
 
-                        sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam  -pl \\'!integration-tests, !ui,!ui/ui-portal,!ui/ui-identity,!ui/ui-frontend,!ui/ui-frontend-common,!ui/ui-ingest,!ui/ui-archive-search ,!ui/ui-referential\\' '''
+                        sh ''' $MVN_COMMAND verify -Psonar-metrics,vitam  -pl \\!ui,!ui/ui-portal,!ui/ui-identity,!ui/ui-frontend,!ui/ui-frontend-common,!ui/ui-ingest,!ui/ui-archive-search ,!ui/ui-referential\\' '''
                     },
                     'Build and Test Ui Frontend Common': {
                         sh 'node -v'
