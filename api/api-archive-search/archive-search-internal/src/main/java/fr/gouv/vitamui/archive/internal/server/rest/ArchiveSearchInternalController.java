@@ -39,6 +39,10 @@ import fr.gouv.vitamui.archives.search.common.rest.RestApi;
 import fr.gouv.vitamui.common.security.SanityChecker;
 import fr.gouv.vitamui.commons.api.CommonConstants;
 import fr.gouv.vitamui.commons.api.ParameterChecker;
+import fr.gouv.vitamui.commons.api.exception.BadRequestException;
+import fr.gouv.vitamui.commons.api.exception.InternalServerException;
+import fr.gouv.vitamui.commons.api.exception.PreconditionFailedException;
+import fr.gouv.vitamui.commons.api.exception.UnexpectedDataException;
 import fr.gouv.vitamui.commons.api.logger.VitamUILogger;
 import fr.gouv.vitamui.commons.api.logger.VitamUILoggerFactory;
 import fr.gouv.vitamui.commons.vitam.api.dto.ResultsDto;
@@ -99,7 +103,7 @@ public class ArchiveSearchInternalController {
         @RequestHeader(value = CommonConstants.X_TENANT_ID_HEADER) final Integer tenantId,
         @RequestHeader(value = CommonConstants.X_ACCESS_CONTRACT_ID_HEADER) final String accessContractId,
         @RequestBody final SearchCriteriaDto searchQuery)
-        throws VitamClientException, IOException {
+        throws VitamClientException, IOException, BadRequestException {
         LOGGER.info("Calling service searchArchiveUnits for tenantId {}, accessContractId {} By Criteria {} ", tenantId,
             accessContractId, searchQuery);
         SanityChecker.sanitizeCriteria(searchQuery);
@@ -114,7 +118,7 @@ public class ArchiveSearchInternalController {
     public VitamUISearchResponseDto getFillingHoldingScheme(
         @RequestHeader(value = CommonConstants.X_TENANT_ID_HEADER) final Integer tenantId,
         @RequestHeader(value = CommonConstants.X_ACCESS_CONTRACT_ID_HEADER) final String accessContractId)
-        throws VitamClientException, IOException {
+        throws VitamClientException, IOException, UnexpectedDataException {
         LOGGER.debug("Get filing plan");
         ParameterChecker.checkParameter("The tenant Id, the accessContract Id  are mandatory parameters: ", tenantId,
             accessContractId);
@@ -138,7 +142,7 @@ public class ArchiveSearchInternalController {
     @GetMapping(RestApi.OBJECTGROUP + CommonConstants.PATH_ID)
     public ResultsDto findObjectById(final @PathVariable("id") String id,
         @RequestHeader(value = CommonConstants.X_ACCESS_CONTRACT_ID_HEADER) final String accessContractId)
-        throws VitamClientException {
+        throws VitamClientException, InternalServerException {
         LOGGER.info("Get ObjectGroup By id : {}", id);
         ParameterChecker
             .checkParameter("The identifier, the accessContract Id  are mandatory parameters: ", id, accessContractId);
@@ -174,7 +178,7 @@ public class ArchiveSearchInternalController {
         @RequestHeader(value = CommonConstants.X_TENANT_ID_HEADER) final Integer tenantId,
         @RequestHeader(value = CommonConstants.X_ACCESS_CONTRACT_ID_HEADER) final String accessContractId,
         @RequestBody final SearchCriteriaDto searchQuery)
-        throws VitamClientException {
+        throws VitamClientException, BadRequestException {
         LOGGER.info("Export to CSV file Archive Units by criteria {}", searchQuery);
         final VitamContext vitamContext = securityService.buildVitamContext(tenantId, accessContractId);
         Resource exportedResult =
@@ -187,7 +191,7 @@ public class ArchiveSearchInternalController {
         @RequestHeader(value = CommonConstants.X_TENANT_ID_HEADER) final Integer tenantId,
         @RequestHeader(value = CommonConstants.X_ACCESS_CONTRACT_ID_HEADER) final String accessContractId,
         @RequestBody final ExportDipCriteriaDto exportDipCriteriaDto)
-        throws VitamClientException {
+        throws VitamClientException, BadRequestException {
         LOGGER.info("Export DIP  by criteria {}", exportDipCriteriaDto);
         SanityChecker.sanitizeCriteria(exportDipCriteriaDto);
         ParameterChecker
@@ -204,7 +208,7 @@ public class ArchiveSearchInternalController {
         @RequestHeader(value = CommonConstants.X_TENANT_ID_HEADER) final Integer tenantId,
         @RequestHeader(value = CommonConstants.X_ACCESS_CONTRACT_ID_HEADER) final String accessContractId,
         @RequestBody final SearchCriteriaDto searchQuery)
-        throws VitamClientException {
+        throws VitamClientException, PreconditionFailedException, BadRequestException {
         LOGGER.info("Calling elimination analysis by criteria {} ", searchQuery);
         SanityChecker.sanitizeCriteria(searchQuery);
         ParameterChecker
@@ -221,7 +225,7 @@ public class ArchiveSearchInternalController {
         @RequestHeader(value = CommonConstants.X_TENANT_ID_HEADER) final Integer tenantId,
         @RequestHeader(value = CommonConstants.X_ACCESS_CONTRACT_ID_HEADER) final String accessContractId,
         @RequestBody final SearchCriteriaDto searchQuery)
-        throws VitamClientException {
+        throws VitamClientException, BadRequestException, PreconditionFailedException {
         LOGGER.info("Calling elimination action by criteria {} ", searchQuery);
         SanityChecker.sanitizeCriteria(searchQuery);
         ParameterChecker
@@ -237,7 +241,8 @@ public class ArchiveSearchInternalController {
     public ResponseEntity<String> updateArchiveUnitsRules(
         @RequestHeader(value = CommonConstants.X_TENANT_ID_HEADER) final Integer tenantId,
         @RequestHeader(value = CommonConstants.X_ACCESS_CONTRACT_ID_HEADER) final String accessContractId,
-        @RequestBody final RuleSearchCriteriaDto ruleSearchCriteriaDto) throws VitamClientException {
+        @RequestBody final RuleSearchCriteriaDto ruleSearchCriteriaDto) throws VitamClientException,
+        BadRequestException {
         LOGGER.info("Update Archive Units Rules by criteria {}", ruleSearchCriteriaDto);
         SanityChecker.sanitizeCriteria(ruleSearchCriteriaDto);
         ParameterChecker

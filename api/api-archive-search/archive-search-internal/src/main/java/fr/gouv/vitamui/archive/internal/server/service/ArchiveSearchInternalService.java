@@ -174,7 +174,7 @@ public class ArchiveSearchInternalService {
 
     public ArchiveUnitsDto searchArchiveUnitsByCriteria(final SearchCriteriaDto searchQuery,
         final VitamContext vitamContext)
-        throws VitamClientException, IOException {
+        throws VitamClientException, IOException, BadRequestException {
         LOGGER.debug("calling find archive units by criteria {} ", searchQuery.toString());
         archiveSearchAgenciesInternalService.mapAgenciesNameToCodes(searchQuery, vitamContext);
         archiveSearchRulesInternalService.mapAppraisalRulesTitlesToCodes(searchQuery, vitamContext);
@@ -217,7 +217,7 @@ public class ArchiveSearchInternalService {
      * @return
      */
     public JsonNode mapRequestToDslQuery(SearchCriteriaDto searchQuery)
-        throws VitamClientException {
+        throws VitamClientException, BadRequestException {
         if (searchQuery == null) {
             throw new BadRequestException("Can't parse null criteria");
         }
@@ -266,7 +266,8 @@ public class ArchiveSearchInternalService {
         return response.toJsonNode();
     }
 
-    public JsonNode getFillingHoldingScheme(VitamContext vitamContext) throws VitamClientException {
+    public JsonNode getFillingHoldingScheme(VitamContext vitamContext)
+        throws VitamClientException, UnexpectedDataException {
         final JsonNode fillingHoldingQuery = createQueryForHoldingFillingUnit();
         return searchArchiveUnits(fillingHoldingQuery, vitamContext);
     }
@@ -284,7 +285,8 @@ public class ArchiveSearchInternalService {
         }
     }
 
-    public ResultsDto findObjectById(String id, VitamContext vitamContext) throws VitamClientException {
+    public ResultsDto findObjectById(String id, VitamContext vitamContext)
+        throws VitamClientException, InternalServerException {
         try {
             LOGGER.info("Get Object Group");
             String re = StringUtils
@@ -325,7 +327,7 @@ public class ArchiveSearchInternalService {
      * @throws IOException
      */
     public Resource exportToCsvSearchArchiveUnitsByCriteria(final SearchCriteriaDto searchQuery,
-        final VitamContext vitamContext) throws VitamClientException {
+        final VitamContext vitamContext) throws VitamClientException, BadRequestException {
         LOGGER.info("Calling exportToCsvSearchArchiveUnitsByCriteria with query {} ", searchQuery);
         Locale locale = Locale.FRENCH;
         if (Locale.FRENCH.getLanguage().equals(searchQuery.getLanguage()) ||
@@ -348,7 +350,7 @@ public class ArchiveSearchInternalService {
      */
     public Resource exportToCsvSearchArchiveUnitsByCriteriaAndParams(final SearchCriteriaDto searchQuery, final
     ExportSearchResultParam exportSearchResultParam, final VitamContext vitamContext)
-        throws VitamClientException {
+        throws VitamClientException, BadRequestException {
         try {
             archiveSearchAgenciesInternalService.mapAgenciesNameToCodes(searchQuery, vitamContext);
             List<ArchiveUnitCsv> unitCsvList = exportArchiveUnitsByCriteriaToCsvFile(searchQuery, vitamContext);
@@ -398,14 +400,15 @@ public class ArchiveSearchInternalService {
             writer.close();
             Resource generatedResult = new ByteArrayResource(outputStream.toByteArray());
             return generatedResult;
-        } catch (IOException ex) {
+        } catch (IOException | RequestEntityTooLargeException ex) {
             throw new BadRequestException("Unable to export csv file ", ex);
         }
     }
 
 
     private List<ArchiveUnitCsv> exportArchiveUnitsByCriteriaToCsvFile(final SearchCriteriaDto searchQuery,
-        final VitamContext vitamContext) throws VitamClientException {
+        final VitamContext vitamContext)
+        throws VitamClientException, RequestEntityTooLargeException, BadRequestException {
         try {
             LOGGER.info("Calling exporting  export ArchiveUnits to CSV with criteria {}", searchQuery);
             checkSizeLimit(vitamContext, searchQuery);
@@ -431,8 +434,11 @@ public class ArchiveSearchInternalService {
                 ).map(archiveUnit -> cleanAndMapArchiveUnitResult(archiveUnit)).collect(Collectors.toList());
             }
             return archivesFilled;
-        } catch (IOException e) {
+        } catch (IOException | BadRequestException e) {
             throw new BadRequestException("Can't parse criteria as Vitam query", e);
+        } catch (RequestEntityTooLargeException e) {
+
+            throw new RequestEntityTooLargeException("Can't parse criteria as Vitam query", e);
         }
     }
 
@@ -489,7 +495,7 @@ public class ArchiveSearchInternalService {
      * @param searchQuery
      */
     private void checkSizeLimit(VitamContext vitamContext, SearchCriteriaDto searchQuery)
-        throws VitamClientException, IOException {
+        throws VitamClientException, IOException, BadRequestException, RequestEntityTooLargeException {
         SearchCriteriaDto searchQueryCounting = new SearchCriteriaDto();
         searchQueryCounting.setCriteriaList(searchQuery.getCriteriaList());
         searchQueryCounting.setSize(1);
@@ -565,7 +571,7 @@ public class ArchiveSearchInternalService {
 
     public String requestToExportDIP(final ExportDipCriteriaDto exportDipCriteriaDto,
                             final VitamContext vitamContext)
-        throws VitamClientException {
+        throws VitamClientException, BadRequestException {
 
         LOGGER.debug("Export DIP by criteria {} ", exportDipCriteriaDto.toString());
         JsonNode dslQuery = prepareDslQuery(exportDipCriteriaDto.getExportDIPSearchCriteria(), vitamContext);
@@ -580,7 +586,7 @@ public class ArchiveSearchInternalService {
     }
 
     public JsonNode startEliminationAnalysis(final SearchCriteriaDto searchQuery, final VitamContext vitamContext)
-        throws VitamClientException {
+        throws VitamClientException, PreconditionFailedException, BadRequestException {
 
         LOGGER.debug("Elimination analysis by criteria {} ", searchQuery.toString());
         JsonNode dslQuery = prepareDslQuery(searchQuery, vitamContext);
@@ -600,7 +606,7 @@ public class ArchiveSearchInternalService {
     }
 
     public JsonNode startEliminationAction(final SearchCriteriaDto searchQuery, final VitamContext vitamContext)
-        throws VitamClientException {
+        throws VitamClientException, PreconditionFailedException, BadRequestException {
 
         LOGGER.debug("Elimination action by criteria {} ", searchQuery.toString());
         JsonNode dslQuery = prepareDslQuery(searchQuery, vitamContext);
@@ -630,7 +636,7 @@ public class ArchiveSearchInternalService {
     }
 
     private JsonNode prepareDslQuery(final SearchCriteriaDto searchQuery, final VitamContext vitamContext)
-        throws VitamClientException {
+        throws VitamClientException, BadRequestException {
         searchQuery.setPageNumber(0);
         searchQuery.setSize(EXPORT_DIP_AND_ELIMINATION_MAX_ELEMENTS);
         archiveSearchAgenciesInternalService.mapAgenciesNameToCodes(searchQuery, vitamContext);
@@ -655,7 +661,7 @@ public class ArchiveSearchInternalService {
         return dipRequest;
     }
 
-    public JsonNode createQueryForHoldingFillingUnit() {
+    public JsonNode createQueryForHoldingFillingUnit() throws UnexpectedDataException {
         try {
             final SelectMultiQuery select = new SelectMultiQuery();
             final Query query =
@@ -688,7 +694,7 @@ public class ArchiveSearchInternalService {
     }
 
     public String updateArchiveUnitsRules(final VitamContext vitamContext, final RuleSearchCriteriaDto ruleSearchCriteriaDto)
-        throws VitamClientException {
+        throws VitamClientException, BadRequestException {
 
         LOGGER.info("Add Rules to Units VitamUI Rules : {}", ruleSearchCriteriaDto.getRuleActions());
         LOGGER.info("Add Rules to Units VitamUI search Criteria : {}", ruleSearchCriteriaDto.getSearchCriteriaDto().toString());

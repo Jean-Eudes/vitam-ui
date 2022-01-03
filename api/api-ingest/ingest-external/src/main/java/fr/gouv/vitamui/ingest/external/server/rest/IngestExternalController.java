@@ -42,6 +42,7 @@ import fr.gouv.vitamui.commons.api.ParameterChecker;
 import fr.gouv.vitamui.commons.api.domain.DirectionDto;
 import fr.gouv.vitamui.commons.api.domain.PaginatedValuesDto;
 import fr.gouv.vitamui.commons.api.domain.ServicesData;
+import fr.gouv.vitamui.commons.api.exception.InvalidSanitizeParameterException;
 import fr.gouv.vitamui.commons.api.logger.VitamUILogger;
 import fr.gouv.vitamui.commons.api.logger.VitamUILoggerFactory;
 import fr.gouv.vitamui.commons.vitam.api.dto.LogbookOperationDto;
@@ -97,17 +98,19 @@ public class IngestExternalController {
 
     @Secured(ServicesData.ROLE_GET_INGEST)
     @GetMapping(CommonConstants.PATH_ID)
-    public LogbookOperationDto getOne(@PathVariable("id") final String id) {
+    public LogbookOperationDto getOne(@PathVariable("id") final String id) throws InvalidSanitizeParameterException {
         LOGGER.debug("get One Ingest id={}", id);
         ParameterChecker.checkParameter("The Identifier is a mandatory parameter: ", id);
+        SanityChecker.checkParameter(id);
         return ingestExternalService.getOne(id);
     }
 
     @Secured(ServicesData.ROLE_LOGBOOKS)
     @GetMapping(RestApi.INGEST_REPORT_ODT + CommonConstants.PATH_ID)
-    public ResponseEntity<byte[]> generateODTReport(final @PathVariable("id") String id) {
+    public ResponseEntity<byte[]> generateODTReport(final @PathVariable("id") String id) throws InvalidSanitizeParameterException {
         LOGGER.debug("export ODT report for ingest with id :{}", id);
         ParameterChecker.checkParameter("The Identifier is a mandatory parameter :", id);
+        SanityChecker.checkParameter(id);
         return ingestExternalService.generateODTReport(id);
     }
 

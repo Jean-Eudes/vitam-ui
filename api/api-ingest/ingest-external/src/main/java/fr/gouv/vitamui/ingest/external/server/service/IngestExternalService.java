@@ -36,9 +36,11 @@
  */
 package fr.gouv.vitamui.ingest.external.server.service;
 
+import fr.gouv.vitamui.common.security.SanityChecker;
 import fr.gouv.vitamui.commons.api.ParameterChecker;
 import fr.gouv.vitamui.commons.api.domain.DirectionDto;
 import fr.gouv.vitamui.commons.api.domain.PaginatedValuesDto;
+import fr.gouv.vitamui.commons.api.exception.InvalidSanitizeParameterException;
 import fr.gouv.vitamui.commons.vitam.api.dto.LogbookOperationDto;
 import fr.gouv.vitamui.iam.security.client.AbstractResourceClientService;
 import fr.gouv.vitamui.iam.security.service.ExternalSecurityService;
@@ -95,13 +97,25 @@ public class IngestExternalService extends AbstractResourceClientService<Logbook
             result.isHasMore());
     }
 
-    public LogbookOperationDto getOne(final String id) {
-        return ingestInternalRestClient.getOne(getInternalHttpContext(), id);
+    public LogbookOperationDto getOne(final String id) throws InvalidSanitizeParameterException {
+        try {
+            SanityChecker.checkParameter(id);
+            return ingestInternalRestClient.getOne(getInternalHttpContext(), id);
+        } catch (InvalidSanitizeParameterException e) {
+            throw new InvalidSanitizeParameterException(e);
+        }
+
 
     }
 
-    public ResponseEntity<byte[]> generateODTReport(String id) {
-        return ingestInternalRestClient.generateODTReport(getInternalHttpContext(), id);
+    public ResponseEntity<byte[]> generateODTReport(String id) throws InvalidSanitizeParameterException {
+        try {
+            SanityChecker.checkParameter(id);
+            return ingestInternalRestClient.generateODTReport(getInternalHttpContext(), id);
+        } catch (InvalidSanitizeParameterException e) {
+        throw new InvalidSanitizeParameterException(e);
+    }
+
     }
 
     @Override

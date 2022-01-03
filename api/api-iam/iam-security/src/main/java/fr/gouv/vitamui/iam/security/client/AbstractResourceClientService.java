@@ -53,6 +53,7 @@ import fr.gouv.vitamui.commons.api.domain.ResultsDto;
 import fr.gouv.vitamui.commons.api.domain.ServicesData;
 import fr.gouv.vitamui.commons.api.exception.ForbiddenException;
 import fr.gouv.vitamui.commons.api.exception.InvalidFormatException;
+import fr.gouv.vitamui.commons.api.exception.InvalidSanitizeParameterException;
 import fr.gouv.vitamui.commons.api.exception.NotImplementedException;
 import fr.gouv.vitamui.commons.api.utils.ApiUtils;
 import fr.gouv.vitamui.commons.api.utils.CastUtils;
@@ -113,7 +114,7 @@ public abstract class AbstractResourceClientService<E extends IdDto, I extends I
         return converterToExternalDto(getClient().patchWithDto(getInternalHttpContext(), partialDto));
     }
 
-    protected E getOne(final String id) {
+    protected E getOne(final String id) throws InvalidSanitizeParameterException {
         final Optional<String> criteria = addAccessRestriction(new QueryDto()).toOptionalJson();
         return converterToExternalDto(getClient().getOne(getInternalHttpContext(), id, criteria));
     }
