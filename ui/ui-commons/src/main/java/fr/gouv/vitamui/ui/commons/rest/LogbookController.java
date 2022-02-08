@@ -52,6 +52,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -139,14 +140,14 @@ public class LogbookController extends AbstractUiRestController {
     }
 
     @ApiOperation(value = "Download the report file for a given operation")
-    @GetMapping(value = CommonConstants.LOGBOOK_DOWNLOAD_REPORT_PATH)
+    @GetMapping(value = CommonConstants.LOGBOOK_DOWNLOAD_REPORT_PATH, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Resource> downloadReport(@PathVariable final String id,
                                                    @PathVariable final String downloadType,
                                                    @RequestParam final Optional<ContentDispositionType> disposition) {
         LOGGER.debug("downloadReport: id={}, downloadType:{}, disposition={}", id, downloadType, disposition);
         ParameterChecker.checkParameter("The Identifier, the downloadType are mandatory parameters: ", id, downloadType);
-        final ResponseEntity<Resource> response = logbookService.downloadReport(buildUiHttpContext(), id, downloadType);
+        final ResponseEntity<Resource> response = logbookService.downloadReport(buildUiHttpContext(), id, downloadType).block();
         return RestUtils.buildFileResponse(response, disposition, Optional.empty());
     }
 

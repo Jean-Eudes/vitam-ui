@@ -53,7 +53,12 @@ import fr.gouv.vitamui.iam.security.service.InternalSecurityService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -63,10 +68,13 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Controller for logbooks.
@@ -161,10 +169,10 @@ public class LogbookInternalController {
     }
 
     @ApiOperation(value = "Download the report file for a given operation")
-    @GetMapping(value = CommonConstants.LOGBOOK_DOWNLOAD_REPORT_PATH)
+    @GetMapping(value = CommonConstants.LOGBOOK_DOWNLOAD_REPORT_PATH, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @Secured(ServicesData.ROLE_LOGBOOKS)
     @ResponseStatus(HttpStatus.OK)
-    public void downloadReport(
+    public Mono<ResponseEntity<Resource>>  downloadReport(
             @RequestHeader(required = true, value = CommonConstants.X_TENANT_ID_HEADER) final Integer tenantId,
             @RequestHeader(required = true, value = CommonConstants.X_ACCESS_CONTRACT_ID_HEADER) final String accessContractId,
             @PathVariable final String id,
@@ -172,14 +180,28 @@ public class LogbookInternalController {
             final HttpServletResponse response) throws VitamClientException, IOException {
         LOGGER.debug("Download the report file for the Vitam operation : {} with download type : {}", id, downloadType);
         ParameterChecker.checkParameter("The Identifier is a mandatory parameter: ", id);
+
+        LOGGER.info("Access Contract {} ", accessContractId);
+        ParameterChecker
+            .checkParameter("The identifier, the accessContract Id  are mandatory parameters: ", id, accessContractId);
+        final VitamContext vitamContext = getVitamContext(tenantId, accessContractId);
+        return Mono.<Resource>fromCallable(() -> {
+             Response vitamResponse = logbookService.downloadReport(id, downloadType, vitamContext);
+             return new InputStreamResource((InputStream) vitamResponse.getEntity());
+        }).subscribeOn(Schedulers.boundedElastic())
+            .flatMap(resource -> Mono.just(ResponseEntity
+                .ok().cacheControl(CacheControl.noCache())
+                .body(resource)));
+    }
+
+    private VitamContext getVitamContext(Integer tenantId, String accessContractId) {
         final VitamContext vitamContext;
         if(accessContractId != null) {
             vitamContext = securityService.buildVitamContext(tenantId, accessContractId);
         } else {
             vitamContext = securityService.buildVitamContext(tenantId);
         }
-        final Response vitamResponse = logbookService.downloadReport(id, downloadType, vitamContext);
-        VitamRestUtils.writeFileResponse(vitamResponse, response);
+        return vitamContext;
     }
 
 }

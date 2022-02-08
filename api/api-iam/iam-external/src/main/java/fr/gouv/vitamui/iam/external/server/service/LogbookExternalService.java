@@ -36,6 +36,9 @@
  */
 package fr.gouv.vitamui.iam.external.server.service;
 
+import fr.gouv.vitamui.commons.rest.client.ExternalHttpContext;
+import fr.gouv.vitamui.commons.rest.client.logbook.LogbookInternalWebClient;
+import fr.gouv.vitamui.commons.vitam.api.dto.ResultsDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -60,6 +63,9 @@ import fr.gouv.vitamui.iam.security.client.AbstractInternalClientService;
 import fr.gouv.vitamui.iam.security.service.ExternalSecurityService;
 import lombok.Getter;
 import lombok.Setter;
+import reactor.core.publisher.Mono;
+
+import java.util.Objects;
 
 /**
  * The service to interact with logbooks.
@@ -72,12 +78,14 @@ import lombok.Setter;
 public class LogbookExternalService extends AbstractInternalClientService {
 
     private final LogbookInternalRestClient<InternalHttpContext> logbookRestClient;
+    private final LogbookInternalWebClient<InternalHttpContext> logbookWebClient;
 
     @Autowired
     public LogbookExternalService(final LogbookInternalRestClient<InternalHttpContext> logbookRestClient,
-            final ExternalSecurityService externalSecurityService) {
+            final ExternalSecurityService externalSecurityService,final LogbookInternalWebClient<InternalHttpContext> logbookWebClient) {
         super(externalSecurityService);
         this.logbookRestClient = logbookRestClient;
+        this.logbookWebClient = logbookWebClient;
     }
 
     public static <T> T responseMapping(final JsonNode json, final Class<T> clazz) {
@@ -152,8 +160,12 @@ public class LogbookExternalService extends AbstractInternalClientService {
      * @param id
      * @return
      */
-    public ResponseEntity<Resource> downloadReport(final String id, final String downloadType) {
-        return logbookRestClient.downloadReport(getInternalHttpContext(), id, downloadType);
+
+    public Mono<ResponseEntity<Resource>>  downloadReport(final String id, final String downloadType) {
+        final Mono<ResponseEntity<Resource>> resourceResponseEntityResponse =
+            logbookWebClient
+                .downloadReport(getInternalHttpContext(), id,downloadType);
+        return resourceResponseEntityResponse;
     }
 
     @Override
