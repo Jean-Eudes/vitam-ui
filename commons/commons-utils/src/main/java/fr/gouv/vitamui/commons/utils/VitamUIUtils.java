@@ -203,28 +203,30 @@ public final class VitamUIUtils {
         try {
             final LocalDate date = LocalDate.parse(content);
             return Date.from(date.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
-        } catch (final Exception e) {
+        }
+        catch (final Exception e) {
             // do nothing
         }
 
         try {
             final LocalDateTime date = LocalDateTime.parse(content);
             return Date.from(date.toInstant(ZoneOffset.UTC));
-        } catch (final Exception e) {
+        }
+        catch (final Exception e) {
             // do nothing
         }
 
         try {
             final OffsetDateTime date = OffsetDateTime.parse(content);
             return Date.from(date.toInstant());
-        } catch (final Exception e) {
+        }
+        catch (final Exception e) {
             throw new DateTimeParseException("Text '" + content + "' could not be parsed", content, -1);
         }
     }
 
     /**
      * Method allowing to generate a request ID.
-     *
      * @return The generated identifier.
      */
     public static String generateRequestId() {
@@ -232,8 +234,8 @@ public final class VitamUIUtils {
     }
 
     /**
-     * Method allowing to generate an application ID.
      *
+     * Method allowing to generate an application ID.
      * @param requestId
      * @param applicationIdExt Give by the caller
      * @param applicationName Name of the client certificate
@@ -241,11 +243,10 @@ public final class VitamUIUtils {
      * @param superUserIdentifier Exist if the user is in "Subrogation mode"
      * @param customerIdentifier
      * @param requestId Request identifier linked to the current request.
-     * @return The generated application ID.
+     * @return  The generated application ID.
      */
-    public static String generateApplicationId(final String applicationIdExt, final String applicationName,
-        final String userIdentifier,
-        final String superUserIdentifier, final String customerIdentifier, final String requestId) {
+    public static String generateApplicationId(final String applicationIdExt, final String applicationName, final String userIdentifier,
+            final String superUserIdentifier, final String customerIdentifier, final String requestId) {
         // Application-Id format: applicationIdExt:requestId:applicationName:userIdentifier:superUserIdentifier:customerIdentifier.
         final String msg = "Missing %s information for construct X-Application-Id header";
         ParamsUtils.checkParameter(String.format(msg, "applicationName"), applicationName);
@@ -253,10 +254,8 @@ public final class VitamUIUtils {
         ParamsUtils.checkParameter(String.format(msg, "customerIdentifier"), customerIdentifier);
         ParamsUtils.checkParameter(String.format(msg, "requestId"), requestId);
 
-        return String.format("%s:%s:%s:%s:%s:%s",
-            formatOptionalEntriesForApplicationId(StringUtils.remove(applicationIdExt, ":")), requestId,
-            applicationName,
-            userIdentifier, formatOptionalEntriesForApplicationId(superUserIdentifier), customerIdentifier);
+        return String.format("%s:%s:%s:%s:%s:%s", formatOptionalEntriesForApplicationId(StringUtils.remove(applicationIdExt, ":")), requestId, applicationName,
+                userIdentifier, formatOptionalEntriesForApplicationId(superUserIdentifier), customerIdentifier);
     }
 
     private static String formatOptionalEntriesForApplicationId(final String entry) {
@@ -285,8 +284,13 @@ public final class VitamUIUtils {
         return Collections.unmodifiableList(unionList);
     }
 
-    public static String getSha512Print(final byte[] data)
-        throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
+    /**
+     * @Deprecated
+     * This method is no longer acceptable to calculate SHA print.
+     * Use {@link #getSha512Print(InputStream)} instead.
+     */
+    @Deprecated
+    public static String getSha512Print(final byte[] data) throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
         Security.addProvider(new BouncyCastleProvider());
         final MessageDigest digest = MessageDigest.getInstance(PRINT_ALGORITHM, "BC");
         digest.digest(data);
@@ -294,6 +298,19 @@ public final class VitamUIUtils {
         mdbytes = digest.digest(data);
 
         return DatatypeConverter.printHexBinary(mdbytes);
+    }
+
+    public static String getSha512Print(final InputStream is) throws IOException, NoSuchAlgorithmException, NoSuchProviderException {
+        Security.addProvider(new BouncyCastleProvider());
+        final MessageDigest messageDigest = MessageDigest.getInstance(PRINT_ALGORITHM, "BC");
+        int bytesRead = 0;
+        final byte[] buffer = new byte[2048];
+        while ((bytesRead = is.read(buffer)) != -1) {
+            messageDigest.update(buffer, 0, bytesRead);
+        }
+        final byte[] mdBytes = messageDigest.digest();
+
+        return DatatypeConverter.printHexBinary(mdBytes);
     }
 
     public static String secureFormatHeadersLogging(HttpHeaders headers) {
