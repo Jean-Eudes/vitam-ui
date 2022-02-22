@@ -42,6 +42,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CollapseModule } from '../../components/collapse/collapse.module';
 import { EventTypeLabelModule } from '../event-type-label/event-type-label.module';
 import { HistoryEventsComponent } from './history-events/history-events.component';
+import { MultiOperationHistoryTabComponent } from './multi-operation-history-tab/multi-operation-history-tab.component';
 import {
   OperationHistoryTabComponent
 } from './operation-history-tab/operation-history-tab.component';
@@ -54,7 +55,7 @@ import {
     EventTypeLabelModule,
     TranslateModule
   ],
-  declarations: [HistoryEventsComponent, OperationHistoryTabComponent],
-  exports: [HistoryEventsComponent, OperationHistoryTabComponent]
+  declarations: [HistoryEventsComponent, OperationHistoryTabComponent, MultiOperationHistoryTabComponent],
+  exports: [HistoryEventsComponent, OperationHistoryTabComponent, MultiOperationHistoryTabComponent]
 })
 export class HistoryModule { }

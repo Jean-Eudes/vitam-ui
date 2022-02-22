@@ -34,7 +34,7 @@
  * The fact that you are presently reading this means that you have had
  * knowledge of the CeCILL-C license and that you accept its terms.
  */
-import { ENVIRONMENT, LoggerModule } from 'ui-frontend-common';
+import { ENVIRONMENT, LoggerModule, VitamUISnackBarService } from 'ui-frontend-common';
 import { BASE_URL, Customer, Operators, OtpState, SearchQuery } from 'ui-frontend-common';
 import { environment } from './../../environments/environment';
 
@@ -44,25 +44,23 @@ import { inject, TestBed } from '@angular/core/testing';
 import { Type } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { EMPTY } from 'rxjs';
-import { VitamUISnackBar, VitamUISnackBarComponent } from '../shared/vitamui-snack-bar';
 import { CustomerService } from './customer.service';
 
 describe('CustomerService', () => {
   let httpTestingController: HttpTestingController;
   let customerService: CustomerService;
+  const snackBarSpy = jasmine.createSpyObj('VitamUISnackBarService', ['open']);
 
   beforeEach(() => {
-    const snackBarSpy = jasmine.createSpyObj('VitamUISnackBar', ['open', 'openFromComponent']);
-
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, LoggerModule.forRoot()],
       providers: [
         CustomerService,
-        { provide: VitamUISnackBar, useValue: snackBarSpy },
         { provide: BASE_URL, useValue: '/fake-api' },
         { provide: ENVIRONMENT, useValue: environment },
-        { provide: TranslateService, useValue: { instant: () => EMPTY } }
-      ]
+        { provide: TranslateService, useValue: { instant: () => EMPTY } },
+        { provide: VitamUISnackBarService, useValue: snackBarSpy },
+      ],
     });
 
     httpTestingController = TestBed.inject(HttpTestingController as Type<HttpTestingController>);
@@ -74,37 +72,30 @@ describe('CustomerService', () => {
   }));
 
   it('should call /fake-api/customers and display a success message', () => {
-    const snackBar = TestBed.inject(VitamUISnackBar);
-    customerService.create(expectedCustomer).subscribe(
-      (response: Customer) => {
-        expect(response).toEqual(expectedCustomer);
-        expect(snackBar.openFromComponent).toHaveBeenCalledTimes(1);
-        expect(snackBar.openFromComponent).toHaveBeenCalledWith(VitamUISnackBarComponent, {
-          panelClass: 'vitamui-snack-bar',
-          data: { type: 'customerCreate', code: expectedCustomer.code },
-          duration: 10000
-        });
-      },
-      fail
-    );
+    const snackBar = TestBed.inject(VitamUISnackBarService);
+    customerService.create(expectedCustomer).subscribe((response: Customer) => {
+      expect(response).toEqual(expectedCustomer);
+      expect(snackBar.open).toHaveBeenCalledWith({
+        message: 'SHARED.SNACKBAR.CUSTOMER_CREATE',
+        icon: 'vitamui-icon-bank',
+        translateParams: {
+          param1: expectedCustomer.code,
+        },
+      });
+    }, fail);
     const req = httpTestingController.expectOne('/fake-api/customers');
     expect(req.request.method).toEqual('POST');
     req.flush(expectedCustomer);
   });
 
   it('should display an error message', () => {
-    const snackBar = TestBed.inject(VitamUISnackBar);
-    customerService.create(expectedCustomer).subscribe(
-      fail,
-      () => {
-        expect(snackBar.openFromComponent).toHaveBeenCalledTimes(1);
-        expect(snackBar.openFromComponent).toHaveBeenCalledWith(VitamUISnackBarComponent, {
-          panelClass: 'vitamui-snack-bar',
-          data: { type: 'customerCreateError' },
-          duration: 10000
-        });
-      }
-    );
+    const snackBar = TestBed.inject(VitamUISnackBarService);
+    customerService.create(expectedCustomer).subscribe(fail, () => {
+      expect(snackBar.open).toHaveBeenCalledWith({
+        message: 'SHARED.SNACKBAR.CUSTOMER_CREATE_ERROR',
+        icon: 'vitamui-icon-danger',
+      });
+    });
     const req = httpTestingController.expectOne('/fake-api/customers');
     expect(req.request.method).toEqual('POST');
     req.flush({ message: 'Expected message' }, { status: 400, statusText: 'Bad request' });
@@ -156,7 +147,6 @@ describe('CustomerService', () => {
     expect(req.request.method).toEqual('GET');
     req.flush(expectedCustomer);
   });
-
 });
 
 const expectedCustomer: Customer = {
@@ -180,24 +170,26 @@ const expectedCustomer: Customer = {
   language: 'en',
   emailDomains: ['test.com', 'toto.co.uk'],
   defaultEmailDomain: 'test.com',
-  owners: [{
-    id: '6',
-    identifier: '6',
-    customerId: '42',
-    code: '666666',
-    name: 'Alice Vans',
-    companyName: 'Vans',
-    address: {
-      street: 'street2',
-      zipCode: '43121',
-      city: 'Paris',
-      country: 'FR',
+  owners: [
+    {
+      id: '6',
+      identifier: '6',
+      customerId: '42',
+      code: '666666',
+      name: 'Alice Vans',
+      companyName: 'Vans',
+      address: {
+        street: 'street2',
+        zipCode: '43121',
+        city: 'Paris',
+        country: 'FR',
+      },
+      readonly: false,
     },
-    readonly: false
-  }],
+  ],
   themeColors: {},
   portalTitles: {},
   portalMessages: {},
-  gdprAlert : false,
-  gdprAlertDelay : 72
+  gdprAlert: false,
+  gdprAlertDelay: 72,
 };

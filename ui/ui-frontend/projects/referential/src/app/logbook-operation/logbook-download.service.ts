@@ -37,7 +37,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
-import { Event, LogbookApiService, SearchService, VitamUISnackBar } from 'ui-frontend-common';
+import { Event, LogbookApiService, SearchService, VitamUISnackBarService } from 'ui-frontend-common';
 
 const DOWNLOAD_TYPE_TRANSFER_SIP = 'transfersip';
 const DOWNLOAD_TYPE_DIP = 'dip';
@@ -51,7 +51,7 @@ const DOWNLOAD_TYPE_OBJECT = 'object';
 export class LogbookDownloadService extends SearchService<Event> {
   updated = new Subject<Event>();
 
-  constructor(private logbookApiService: LogbookApiService, private snackBar: VitamUISnackBar, http: HttpClient) {
+  constructor(private logbookApiService: LogbookApiService, private snackBarService: VitamUISnackBarService, http: HttpClient) {
     super(http, logbookApiService);
   }
 
@@ -175,10 +175,7 @@ export class LogbookDownloadService extends SearchService<Event> {
       }
       location.href = downloadUrl;
     } else {
-      this.snackBar.open('Impossible de télécharger le rapport pour cette opération', null, {
-        panelClass: 'vitamui-snack-bar',
-        duration: 10000,
-      });
+      this.snackBarService.open({ message: 'SNACKBAR.DOWNLOAD_NOT_ALLOWED' });
     }
   }
 }

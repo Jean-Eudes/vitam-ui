@@ -34,64 +34,64 @@
  * The fact that you are presently reading this means that you have had
  * knowledge of the CeCILL-C license and that you accept its terms.
  */
-import {
-  HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest, HttpResponse
-} from '@angular/common/http';
-import { Inject, Injectable } from '@angular/core';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { uniqueId } from 'lodash-es';
 import * as moment_ from 'moment';
 import { Observable, throwError } from 'rxjs';
-import { catchError, tap, timeout } from 'rxjs/operators';
+import { catchError, tap, timeoutWith } from 'rxjs/operators';
+
+import {
+  HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest, HttpResponse
+} from '@angular/common/http';
+import { Inject, Injectable, Injector } from '@angular/core';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+
 import { AuthService } from './auth.service';
 import { ErrorDialogComponent } from './error-dialog/error-dialog.component';
 import { ENVIRONMENT, WINDOW_LOCATION } from './injection-tokens';
 import { Logger } from './logger/logger';
 import { StartupService } from './startup.service';
 
+import { VitamUISnackBarService } from './components/vitamui-snack-bar/vitamui-snack-bar.service';
+import { SKIP_ERROR_NOTIFICATION } from './utils';
 
+import { VitamUITimeoutError } from './models/http-interceptor/vitamui-timeout-error';
 
 const moment = moment_;
 
-const HTTP_STATUS_CODE_BAD_REQUEST = 400;
 const HTTP_STATUS_CODE_UNAUTHORIZED = 401;
-const HTTP_STATUS_CODE_FORBIDDEN = 403;
-const HTTP_STATUS_CODE_NOT_FOUND = 404;
 const HTTP_STATUS_CODE_INTERNAL_SERVER_ERROR = 500;
-const HTTP_STATUS_CODE_SERVICE_UNAVAILABLE = 503;
-const HTTP_STATUS_CODE_GATEWAY_TIMEOUT = 504;
-const HTTP_STATUS_CODE_EXPECTATION_FAILED = 417;
 const DEFAULT_API_TIMEOUT = 50000;
-const CLIENT_ERROR_START = 400;
-const SERVER_ERROR_START = 500;
-
-const NOTIFICATION_DELAY_MS = 20000;
-
+const DEFAULT_SERVER_ERROR_MESSAGE = 'HTTP_INTERCEPTOR.SERVER_ERROR';
+const ERROR_NOTIFICATION_MESSAGE_BY_HTTP_STATUS: Map<number, string> = new Map([
+  [403, 'HTTP_INTERCEPTOR.HTTP_STATUS_CODE_FORBIDDEN'],
+  [400, 'HTTP_INTERCEPTOR.HTTP_STATUS_CODE_BAD_REQUEST'],
+  [404, 'HTTP_INTERCEPTOR.HTTP_STATUS_CODE_NOT_FOUND'],
+  [503, 'HTTP_INTERCEPTOR.HTTP_STATUS_CODE_SERVICE_UNAVAILABLE'],
+  [504, 'HTTP_INTERCEPTOR.HTTP_STATUS_CODE_GATEWAY_TIMEOUT'],
+  [417, 'HTTP_INTERCEPTOR.HTTP_STATUS_CODE_EXPECTATION_FAILED'],
+]);
 @Injectable()
 export class VitamUIHttpInterceptor implements HttpInterceptor {
 
   private errorDialog: MatDialogRef<ErrorDialogComponent>;
-
   private apiTimeout: number;
+  private snackBarService: VitamUISnackBarService;
 
   constructor(
     private logger: Logger,
     private matDialog: MatDialog,
-    private snackBar: MatSnackBar,
     private startupService: StartupService,
     private authService: AuthService,
+    private injector: Injector,
     @Inject(ENVIRONMENT) private environment: any,
     @Inject(WINDOW_LOCATION) private location: any
   ) {
-    if (environment && environment.apiTimeout != null) {
-      this.apiTimeout = environment.apiTimeout;
-    } else {
-      this.apiTimeout = DEFAULT_API_TIMEOUT;
-    }
+    this.apiTimeout = environment?.apiTimeout ? environment.apiTimeout :  DEFAULT_API_TIMEOUT;
   }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    this.initSnackBarService();
+
     let tenantIdentifier = request.headers.get('X-Tenant-Id');
     if ((!tenantIdentifier || tenantIdentifier === undefined || tenantIdentifier === '') && this.authService.user) {
       tenantIdentifier = this.startupService.getTenantIdentifier();
@@ -108,6 +108,7 @@ export class VitamUIHttpInterceptor implements HttpInterceptor {
     if (headerTimeout && !isNaN(Number(headerTimeout))) {
       this.apiTimeout = Number(headerTimeout);
     }
+
 
     const reqWithCredentials = request.clone({
       withCredentials: true,
@@ -128,7 +129,10 @@ export class VitamUIHttpInterceptor implements HttpInterceptor {
 
     return next.handle(reqWithCredentials)
       .pipe(
-        timeout(this.apiTimeout),
+        timeoutWith(
+          this.apiTimeout,
+          throwError(new VitamUITimeoutError())
+        ),
         tap((ev: HttpEvent<any>) => {
           if (ev instanceof HttpResponse) {
             this.logger.log(this, 'processing response', ev);
@@ -138,8 +142,6 @@ export class VitamUIHttpInterceptor implements HttpInterceptor {
           if (response instanceof HttpErrorResponse && response.status !== errorToByPass) {
             this.logger.log(this, 'Processing http error', response);
             if (response.status === HTTP_STATUS_CODE_UNAUTHORIZED) {
-              // const loginRedirectUrl = response.headers.get('x-login-redirect');
-              // this.router.navigate(['login-redirect'], { queryParams: { url: loginRedirectUrl } });
               if (!this.environment.production && request && request.url.endsWith('/security')) {
                 // MDI : hack for dev purposes, with the first connection, we redirect the user to login
                 this.authService.user = null;
@@ -148,66 +150,47 @@ export class VitamUIHttpInterceptor implements HttpInterceptor {
                 // connection was lost, we need to logout the user
                 this.authService.logout();
               }
-            } else if (response.status === HTTP_STATUS_CODE_FORBIDDEN) {
-              this.snackBar.open('Vous n\'avez pas les droits nécessaires pour effectuer cette opération.', null, {
-                panelClass: 'vitamui-snack-bar',
-                duration: NOTIFICATION_DELAY_MS,
-              });
-            } else if (response.status === HTTP_STATUS_CODE_BAD_REQUEST) {
-              this.snackBar.open('Erreur : requête invalide', null, {
-                panelClass: 'vitamui-snack-bar',
-                duration: NOTIFICATION_DELAY_MS,
-              });
-            } else if (response.status === HTTP_STATUS_CODE_NOT_FOUND) {
-              this.snackBar.open('Erreur : La ressource n\'existe pas', null, {
-                panelClass: 'vitamui-snack-bar',
-                duration: NOTIFICATION_DELAY_MS,
-              });
-            } else if (response.status === HTTP_STATUS_CODE_INTERNAL_SERVER_ERROR) {
-              if (!this.errorDialog) {
-                this.errorDialog = this.matDialog.open(ErrorDialogComponent, {
-                  panelClass: 'vitamui-modal',
-                });
-                this.errorDialog.afterClosed().subscribe(() => this.errorDialog = null);
-              }
-            } else if (response.status === HTTP_STATUS_CODE_SERVICE_UNAVAILABLE) {
-              this.snackBar.open('Une erreur technique est survenue : service indisponible', null, {
-                panelClass: 'vitamui-snack-bar',
-                duration: NOTIFICATION_DELAY_MS,
-              });
-            } else if (response.status === HTTP_STATUS_CODE_GATEWAY_TIMEOUT) {
-              this.snackBar.open('Une erreur technique est survenue : le serveur ne répond pas.', null, {
-                panelClass: 'vitamui-snack-bar',
-                duration: NOTIFICATION_DELAY_MS,
-              });
-            }else if (response.status === HTTP_STATUS_CODE_EXPECTATION_FAILED) {
-               this.snackBar.open("La configuration de la plateforme ne vous permet pas d'executer cette action, merci de contacter votre administrateur", null, {
-                 panelClass: 'vitamui-snack-bar',
-                 duration: NOTIFICATION_DELAY_MS,
-               });
-           } else if (response.status >= CLIENT_ERROR_START) {
-              this.snackBar.open('Une erreur technique est survenue : requête invalide', null, {
-                panelClass: 'vitamui-snack-bar',
-                duration: NOTIFICATION_DELAY_MS,
-              });
-            } else if (response.status >= SERVER_ERROR_START) {
-              this.snackBar.open('Une erreur technique est survenue : erreur interne', null, {
-                panelClass: 'vitamui-snack-bar',
-                duration: NOTIFICATION_DELAY_MS,
-              });
             }
-          } else if (response && response.name === 'TimeoutError') {
-            this.logger.log(this, 'Timeout error', response);
-            this.snackBar.open('Une erreur technique est survenue : le serveur ne répond pas.', null, {
-              panelClass: 'vitamui-snack-bar',
-              duration: NOTIFICATION_DELAY_MS,
-            });
-          } else {
-            this.logger.log(this, 'Request error', response);
+            else {
+              this.errorNotification(response, request);
+            }
           }
-
+          this.logger.log(this, 'Request error', response);
           return throwError(response);
         })
       );
+  }
+
+  private initSnackBarService(): void {
+    if (!this.snackBarService) {
+      try {
+        this.snackBarService = this.injector.get(VitamUISnackBarService);
+      }
+      catch (error) { }
+    }
+  }
+
+  private errorNotification(response: HttpErrorResponse, request: HttpRequest<any>): void {
+    if (!request.headers.has(SKIP_ERROR_NOTIFICATION)) {
+      response.status === HTTP_STATUS_CODE_INTERNAL_SERVER_ERROR
+        ? this.displayErrorDialog()
+        : this.displaySnackBar(response);
+    }
+  }
+
+  private displaySnackBar(response: HttpErrorResponse): void {
+    const errorMsg = ERROR_NOTIFICATION_MESSAGE_BY_HTTP_STATUS.has(response.status)
+      ? ERROR_NOTIFICATION_MESSAGE_BY_HTTP_STATUS.get(response.status)
+      : DEFAULT_SERVER_ERROR_MESSAGE;
+    this.snackBarService.open({ message: errorMsg });
+  }
+
+  private displayErrorDialog(): void {
+    if (!this.errorDialog) {
+      this.errorDialog = this.matDialog.open(ErrorDialogComponent, {
+        panelClass: 'vitamui-modal',
+      });
+      this.errorDialog.afterClosed().subscribe(() => this.errorDialog = null);
+    }
   }
 }
