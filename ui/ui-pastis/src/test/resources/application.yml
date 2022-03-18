@@ -41,7 +41,7 @@ ui-pastis:
         key-path: "@project.build.testOutputDirectory@/truststore_sae-app.jks"
         key-password: azerty
       hostname-verification: true
-  pastis-external-client:
+  pastis-client:
     server-host: localhost
     server-port: 8015
     secure: false

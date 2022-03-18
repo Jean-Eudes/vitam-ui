@@ -55,7 +55,7 @@ ui-pastis:
         key-path: src/main/resources/dev/truststore_server.jks
         key-password: changeme
       hostname-verification: false
-  pastis-external-client:
+  pastis-client:
     server-host: localhost
     server-port: 8015
     connect-time-out: 30

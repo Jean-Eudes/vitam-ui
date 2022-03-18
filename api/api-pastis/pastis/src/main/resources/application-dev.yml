@@ -34,14 +34,14 @@ spring.servlet.multipart.max-request-size: -1
 
 server-identity:
   identityName: vitamui-dev
-  identityRole: pastis-external
+  identityRole: pastis
   identityServerId: 1
 
 server:
   host:
   port: 8015
   ssl:
-    key-store: src/main/resources/dev/keystore_pastis-external.jks
+    key-store: src/main/resources/dev/keystore_pastis.jks
     key-store-password: e2zS1Za6se9vYky0uoATKDfuXDp0j6r4PBWDn4ZHQvX5cKfX
     key-password: e2zS1Za6se9vYky0uoATKDfuXDp0j6r4PBWDn4ZHQvX5cKfX
     trust-store: src/main/resources/dev/truststore_server.jks
@@ -56,7 +56,7 @@ management:
     port: 8189
     ssl:
       enabled: false
-pastis-external:
+pastis:
   security-client:
     server-host: localhost
     server-port: 8084

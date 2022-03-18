@@ -23,6 +23,6 @@ security:
 
 server-identity:
   identityName: vitamui-test
-  identityRole: pastis-external
+  identityRole: pastis
   identityServerId: 1
 logbook.scheduling.sendEventToVitamTasks.enabled: false
