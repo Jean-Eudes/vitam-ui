@@ -55,5 +55,5 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "ui-pastis", ignoreUnknownFields = true)
 public class PastisApplicationProperties extends UIPropertiesImpl {
 
-    public RestClientConfiguration pastisExternalClient;
+    public RestClientConfiguration pastisClient;
 }

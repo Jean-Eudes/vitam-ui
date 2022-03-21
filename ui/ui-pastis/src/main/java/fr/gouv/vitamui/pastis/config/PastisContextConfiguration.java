@@ -69,7 +69,7 @@ public class PastisContextConfiguration {
     public PastisRestClientFactory pastisRestClientFactory(
         final PastisApplicationProperties uiProperties,
         RestTemplateBuilder restTemplateBuilder) {
-        return new PastisRestClientFactory(uiProperties.getPastisExternalClient(),
+        return new PastisRestClientFactory(uiProperties.getPastisClient(),
             restTemplateBuilder);
     }
 
