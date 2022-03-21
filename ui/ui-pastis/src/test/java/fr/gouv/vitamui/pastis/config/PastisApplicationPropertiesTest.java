@@ -62,6 +62,6 @@ public class PastisApplicationPropertiesTest {
         assertThat(applicationProperties.getLimitPagination()).isNotNull();
         assertThat(applicationProperties.getPrefix()).isNotNull();
         assertThat(applicationProperties.getIamExternalClient()).isNotNull();
-        assertThat(applicationProperties.getPastisExternalClient()).isNotNull();
+        assertThat(applicationProperties.getPastisClient()).isNotNull();
     }
 }
