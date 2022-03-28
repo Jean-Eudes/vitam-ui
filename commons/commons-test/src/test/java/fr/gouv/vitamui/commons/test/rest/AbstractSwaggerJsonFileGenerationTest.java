@@ -39,7 +39,7 @@ public abstract class AbstractSwaggerJsonFileGenerationTest {
      * @throws Exception
      */
     @Test
-    @Ignore //Voir Bug #8364 -- Commentaire à enlever après correction de ce bug
+    //Voir Bug #8364 -- Commentaire à enlever après correction de ce bug
     public void swaggerJsonExists() throws Exception {
         final String contentAsString = mockMvc.perform(MockMvcRequestBuilders.get("/v2/api-docs")
             .accept(MediaType.APPLICATION_JSON))

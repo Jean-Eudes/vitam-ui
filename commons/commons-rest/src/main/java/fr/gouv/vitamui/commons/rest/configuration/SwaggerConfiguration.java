@@ -68,7 +68,6 @@ import springfox.documentation.service.ResponseMessage;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger.web.SwaggerResourcesProvider;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 /**
  * Enables the Swagger API documentation.
@@ -76,7 +75,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  * Call swagger-ui in our case http://localhost:[port]/swagger-ui.html#/
  */
 @Configuration
-@EnableSwagger2
 @Profile("swagger")
 @PropertySource(value = { "classpath:swagger-${swagger.layer:default}.properties" }, encoding = "UTF-8")
 public class SwaggerConfiguration {
@@ -163,8 +161,16 @@ public class SwaggerConfiguration {
 
     public static final String SWAGGER_API = "/swagger.json";
 
-    @Bean
-    public Docket api() {
+	@Bean
+	public Docket api() {
+		return new Docket(DocumentationType.SWAGGER_2)
+				.select()
+				.apis(RequestHandlerSelectors.any())
+				.paths(PathSelectors.any())
+				.build();
+	}
+
+	public Docket old_api() {
         final List<Parameter> parameters = new ArrayList<>();
         // @formatter:off
 
