@@ -114,7 +114,15 @@ pipeline {
                         sh 'node -v'
                         sh 'npmrc default'
                         sh ''' $MVN_COMMAND clean verify  -Psonar-metrics,vitam -f ui/ui-frontend-common/pom.xml  '''
-                        sh ''' $MVN_COMMAND verify -Pvitam,sonar-metrics -f ui/ui-frontend/pom.xml '''
+                        sh '''
+                            diff_check=$(git diff HEAD~1 ui/ui-frontend/ | wc -l)
+                            if [[ $diff_check -gt 0 ]]
+                            then
+                              $MVN_COMMAND verify -Pvitam,sonar-metrics -f ui/ui-frontend/pom.xml
+                            else
+                              $MVN_COMMAND verify -DskipAllFrontend -Pvitam,sonar-metrics -f ui/ui-frontend/pom.xml
+                            fi
+                        '''
                     }
                 )
             }
