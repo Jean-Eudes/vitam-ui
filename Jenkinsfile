@@ -105,7 +105,7 @@ pipeline {
 
 
                 sh '''
-                    $MVN_COMMAND clean verify -Psonar-metrics,vitam -pl '!cots/vitamui-nginx,!cots/vitamui-mongod,!cots/vitamui-logstash,!cots/vitamui-mongo-express,!ui,!ui/ui-portal,!ui/ui-identity,!ui/ui-frontend,!ui/ui-frontend-common,!ui/ui-ingest,!ui/ui-archive-search ,!ui/ui-referential ' $JAVA_TOOL_OPTIONS
+                    $MVN_COMMAND clean install -Psonar-metrics,vitam -pl '!cots/vitamui-nginx,!cots/vitamui-mongod,!cots/vitamui-logstash,!cots/vitamui-mongo-express,!ui,!ui/ui-portal,!ui/ui-identity,!ui/ui-frontend,!ui/ui-frontend-common,!ui/ui-ingest,!ui/ui-archive-search ,!ui/ui-referential ' $JAVA_TOOL_OPTIONS
                 '''
 
 
@@ -113,14 +113,14 @@ pipeline {
                     'Build and Test Ui Frontend Common': {
                         sh 'node -v'
                         sh 'npmrc default'
-                        sh ''' $MVN_COMMAND clean verify  -Psonar-metrics,vitam -f ui/ui-frontend-common/pom.xml  '''
+                        sh ''' $MVN_COMMAND clean install  -Psonar-metrics,vitam -f ui/ui-frontend-common/pom.xml  '''
                         sh '''
                             diff_check=$(git diff HEAD~1 ui/ui-frontend/ | wc -l)
                             if [[ $diff_check -gt 0 ]]
                             then
-                              $MVN_COMMAND verify -Pvitam,sonar-metrics -f ui/ui-frontend/pom.xml
+                              $MVN_COMMAND install -Pvitam,sonar-metrics -f ui/ui-frontend/pom.xml
                             else
-                              $MVN_COMMAND verify -DskipAllFrontend -Pvitam,sonar-metrics -f ui/ui-frontend/pom.xml
+                              $MVN_COMMAND install -DskipAllFrontend -Pvitam,sonar-metrics -f ui/ui-frontend/pom.xml
                             fi
                         '''
                     }
@@ -139,19 +139,19 @@ pipeline {
             steps {
                 parallel(
                     'Front portal': {
-                        sh ''' $MVN_COMMAND verify -Pvitam,sonar-metrics -f ui/ui-portal/pom.xml '''
+                        sh ''' $MVN_COMMAND install -Pvitam,sonar-metrics -f ui/ui-portal/pom.xml '''
                     },
                     'Front identity': {
-                        sh ''' $MVN_COMMAND verify -Pvitam,sonar-metrics -f ui/ui-identity/pom.xml '''
+                        sh ''' $MVN_COMMAND install -Pvitam,sonar-metrics -f ui/ui-identity/pom.xml '''
                     },
                     'Front ingest': {
-                        sh ''' $MVN_COMMAND verify -Pvitam,sonar-metrics -f ui/ui-ingest/pom.xml '''
+                        sh ''' $MVN_COMMAND install -Pvitam,sonar-metrics -f ui/ui-ingest/pom.xml '''
                     },
                     'Front archive-search': {
-                        sh ''' $MVN_COMMAND verify -Pvitam,sonar-metrics -f ui/ui-archive-search/pom.xml '''
+                        sh ''' $MVN_COMMAND install -Pvitam,sonar-metrics -f ui/ui-archive-search/pom.xml '''
                     },
                     'Front referential': {
-                        sh ''' $MVN_COMMAND verify -Pvitam,sonar-metrics -f ui/ui-referential/pom.xml '''
+                        sh ''' $MVN_COMMAND install -Pvitam,sonar-metrics -f ui/ui-referential/pom.xml '''
                     }
                 )
             }
