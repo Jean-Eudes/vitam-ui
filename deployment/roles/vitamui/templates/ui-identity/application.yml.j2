@@ -126,10 +126,9 @@ ui-identity:
 {% else %}
     identity: "{{ url_prefix }}/identity"
 {% endif %}
-portal:
-  message: "Profitez d'un portail unique pour rechercher dans les archives de vos coffres, pour déposer des éléments en toute sécurité et pour imprimer des étiquettes en quelques clics."
-  title: "Portail des applications de l'archivage"
 
+address:
+  max-street-length: 250
 ui:
 {% if vitamui_struct.base_url is defined %}
   url: "{{ vitamui_struct.base_url }}"
@@ -162,3 +161,7 @@ opentracing:
     udp-sender:
       host: {{ opentracing.jaeger.udp_sender.host }}
       port: {{ opentracing.jaeger.udp_sender.port }}
+
+portal:
+  message: "Profitez d'un portail unique pour rechercher dans les archives de vos coffres, pour déposer des éléments en toute sécurité et pour imprimer des étiquettes en quelques clics."
+  title: "Portail des applications de l'archivage"
