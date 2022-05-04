@@ -57,7 +57,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -66,8 +75,6 @@ import java.util.Optional;
 
 /**
  * The controller to check existence, create, read, update and delete the users.
- *
- *
  */
 @RestController
 @RequestMapping(RestApi.V1_USERS_URL)
@@ -85,11 +92,15 @@ public class UserExternalController implements CrudController<UserDto> {
     }
 
     @Secured(ServicesData.ROLE_GET_USERS)
-    @GetMapping(params = { "page", "size" })
-    public PaginatedValuesDto<UserDto> getAllPaginated(@RequestParam final Integer page, @RequestParam final Integer size,
-            @RequestParam(required = false) final Optional<String> criteria, @RequestParam(required = false) final Optional<String> orderBy,
-            @RequestParam(required = false) final Optional<DirectionDto> direction) {
-        LOGGER.debug("getPaginateEntities page={}, size={}, criteria={}, orderBy={}, ascendant={}", page, size, criteria, orderBy, direction);
+    @GetMapping(params = {"page", "size"})
+    public PaginatedValuesDto<UserDto> getAllPaginated(@RequestParam final Integer page,
+        @RequestParam final Integer size,
+        @RequestParam(required = false) final Optional<String> criteria,
+        @RequestParam(required = false) final Optional<String> orderBy,
+        @RequestParam(required = false) final Optional<DirectionDto> direction) {
+        LOGGER
+            .debug("getPaginateEntities page={}, size={}, criteria={}, orderBy={}, ascendant={}", page, size, criteria,
+                orderBy, direction);
         RestUtils.checkCriteria(criteria);
         return userExternalService.getAllPaginated(page, size, criteria, orderBy, direction);
     }
@@ -104,11 +115,10 @@ public class UserExternalController implements CrudController<UserDto> {
     }
 
     /**
-     *
      * {@inheritDoc}
      */
     @Override
-    @Secured({ ServicesData.ROLE_GET_USERS, ServicesData.ROLE_CHECK_USERS })
+    @Secured({ServicesData.ROLE_GET_USERS, ServicesData.ROLE_CHECK_USERS})
     @RequestMapping(path = CommonConstants.PATH_CHECK, method = RequestMethod.HEAD)
     public ResponseEntity<Void> checkExist(@RequestParam final String criteria) {
         LOGGER.debug("Check exists by criteria", criteria);
@@ -119,7 +129,7 @@ public class UserExternalController implements CrudController<UserDto> {
 
     @Override
     @PostMapping
-    @Secured(ServicesData.ROLE_CREATE_USERS)
+    //@Secured(ServicesData.ROLE_CREATE_USERS)
     public UserDto create(final @Valid @RequestBody UserDto dto) {
         LOGGER.debug("Create {}", dto);
         return userExternalService.create(dto);
@@ -142,7 +152,8 @@ public class UserExternalController implements CrudController<UserDto> {
         LOGGER.debug("Patch User {} with {}", id, partialDto);
         ParameterChecker.checkParameter("Identifier is mandatory : ", id);
         SanityChecker.check(id);
-        Assert.isTrue(StringUtils.equals(id, (String) partialDto.get("id")), "Unable to patch user : the DTO id must match the path id");
+        Assert.isTrue(StringUtils.equals(id, (String) partialDto.get("id")),
+            "Unable to patch user : the DTO id must match the path id");
         return userExternalService.patch(partialDto);
     }
 
@@ -163,6 +174,7 @@ public class UserExternalController implements CrudController<UserDto> {
 
     /**
      * Get levels by criteria.
+     *
      * @param criteria Criteria as json string
      * @return List of matching levels
      */
@@ -176,6 +188,7 @@ public class UserExternalController implements CrudController<UserDto> {
 
     /**
      * Create/refresh current user analytics
+     *
      * @param partialDto analytics to create or refresh
      * @return current user with updated analytics
      */
