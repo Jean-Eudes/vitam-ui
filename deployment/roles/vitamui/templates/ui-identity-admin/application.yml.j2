@@ -130,8 +130,10 @@ ui-identity:
     identity: "{{ url_prefix }}/identity" # TODO OMA : revoir avec les redirections du RP
 {% endif %}
 
+
 address:
-  max-street-length: 250
+  max-street-length: {{ vitamui.identity.max_street_length }}
+
 ui:
 {% if vitamui_struct.base_url is defined %}
   url: "{{ vitamui_struct.base_url }}"
