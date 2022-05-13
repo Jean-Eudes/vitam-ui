@@ -1,0 +1,83 @@
+db = db.getSiblingDB('iam')
+
+print("START 318_application_ref.js");
+
+// -------- VITAM ADMINISTRATION -----
+
+db.applications.insert({
+   "identifier" : "COLLECT_APP",
+   "url" : "https://dev.vitamui.com:4210/collect",
+   "icon" : "vitamui-icon vitamui-icon-rules",
+   "name" : "collect module",
+   "category" : "ingest_and_consultation",
+   "position" : 90,
+   "hasCustomerList" : false,
+   "hasTenantList" : true,
+   "hasHighlight" : false,
+   "tooltip" : "Visualisation de l'ensemble des AU de collect",
+   "target" : "_self",
+   "serviceId" : "^https://dev.vitamui.com:4210/.*"
+})
+
+
+
+
+db.profiles.insert({
+  "_id": "system_collect",
+  "identifier" : 5000,
+  "name": "Collect",
+  "description": "Collect Profile",
+  "tenantIdentifier": 1,
+  "applicationName": "COLLECT_APP",
+  "level": "",
+  "enabled": true,
+  "readonly": false,
+  "customerId": "system_customer",
+  "roles": [
+  {
+       "name": "ROLE_GET_ACCESSION_REGISTER_DETAIL"
+  },
+  {
+       "name": "ROLE_COLLECT"
+  }
+   ]
+});
+
+db.groups.updateOne( {
+   "_id": "admin_group"
+}, {
+    $addToSet: {
+        "profileIds":  {
+            $each: [
+               "system_collect"
+           ]
+        }
+    }
+});
+
+
+db.groups.updateOne( {
+	"_id": "5c79022e7884583d1ebb6e5d0bc0121822684250a3fd2996fd93c04634363363"
+}, {
+    $addToSet: {
+        "profileIds":  {
+            $each: [
+               "system_collect"
+        	]
+        }
+    }
+});
+
+
+
+var nbInsert = db.services.insert({
+   "_id" : NumberInt(7),
+   "_class": "org.apereo.cas.services.RegexRegisteredService",
+	"serviceId": "^https://dev.vitamui.com:4210/.*",
+   "name": "Collect Application",
+   "logoutType" : "FRONT_CHANNEL",
+	"logoutUrl": "https://dev.vitamui.com:4210/logout",
+   "attributeReleasePolicy": {
+      "_class": "org.apereo.cas.services.ReturnAllAttributeReleasePolicy"
+   }
+});
