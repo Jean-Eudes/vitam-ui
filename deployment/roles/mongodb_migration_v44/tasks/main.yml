@@ -1,0 +1,30 @@
+---
+
+- block:
+
+  # Set the mongo_list var to have a list of cluster members
+  - import_tasks: cluster_list.yml
+
+  - name: Wait for the service port to be open
+    wait_for:
+        host: "{{ ip_service }}"
+        port: "{{ mongo_port }}"
+        timeout: "{{ vitam_defaults.services.start_timeout }}"
+
+  # set the is_primary var for each host to find out if the member is primary or not
+  - import_tasks: is_primary.yml
+
+when: action == 'mongodb_set_members_groups'
+
+
+######
+
+# Upgrade the packages
+- include_tasks: update_packages_mongoc.yml
+  when: mongo_type == 'mongoc'
+
+- include_tasks: update_packages_mongod.yml
+  when: mongo_type == 'mongod'
+
+- include_tasks: update_packages_mongos.yml
+  when: mongo_type == 'mongos'
