@@ -1,0 +1,22 @@
+db = db.getSiblingDB('security')
+
+print("START update_collect_security_ref.js");
+
+db.contexts.updateOne({
+  "_id": "ui_collect_context",
+  {
+    "$addToSet": {
+      "roleNames": [
+        "ROLE_GET_EXTERNAL_PARAMS",
+        "ROLE_GET_FILLING_PLAN_ACCESS",
+        "ROLE_CREATE_PROJECTS",
+        "ROLE_UPDATE_PROJECTS"
+      ]
+    }
+  },
+  {
+    "upsert": false
+  }
+});
+
+print("END update_collect_security_ref.js");

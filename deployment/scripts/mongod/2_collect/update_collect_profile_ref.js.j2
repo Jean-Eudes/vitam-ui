@@ -1,0 +1,22 @@
+db = db.getSiblingDB('iam')
+
+print("START update_collect_profile_ref.js");
+
+db.profiles.updateOne({
+  "_id": "system_collect_profile",
+  {
+    "$addToSet": {
+      "roles": [
+        {"name": "ROLE_GET_EXTERNAL_PARAMS"},
+        {"name": "ROLE_GET_FILLING_PLAN_ACCESS"},
+        {"name": "ROLE_CREATE_PROJECTS"},
+        {"name": "ROLE_UPDATE_PROJECTS"},
+      ]
+    }
+  },
+  {
+    "upsert": false
+  }
+});
+
+print("END update_collect_profile_ref.js");
