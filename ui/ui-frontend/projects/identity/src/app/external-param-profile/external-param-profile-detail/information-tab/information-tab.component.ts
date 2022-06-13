@@ -60,6 +60,7 @@ export class InformationTabComponent implements OnDestroy, OnInit, OnChanges {
   userLevel: string;
   previousValue: ExternalParamProfile;
   activeAccessContracts$: Observable<AccessContract[]>;
+  thresholdValues: number[] = [100, 10000, 100000, 10000000, 100000000, 1000000000];
 
   @Input() externalParamProfile: ExternalParamProfile;
   @Input() readOnly: boolean;
@@ -77,7 +78,7 @@ export class InformationTabComponent implements OnDestroy, OnInit, OnChanges {
 
   ngOnInit() {
     this.initForm();
-    this.initListenersOnFormsValuesChanges();
+    // this.initListenersOnFormsValuesChanges();
 
     this.activeAccessContracts$ = this.externalParamProfileService.getAllActiveAccessContracts(this.tenantIdentifier);
   }
@@ -99,10 +100,12 @@ export class InformationTabComponent implements OnDestroy, OnInit, OnChanges {
       description: [null, Validators.required],
       enabled: false,
       accessContract: [null, Validators.required],
+      setPlateformThresholdSetted: true,
+      bulkOperationsThreshold: [null, []],
     });
   }
 
-  private initListenersOnFormsValuesChanges() {
+  public initListenersOnFormsValuesChanges() {
     this.updateFormSub = this.form.valueChanges
       .pipe(
         map(() => diff(this.form.value, this.previousValue)),
@@ -139,5 +142,9 @@ export class InformationTabComponent implements OnDestroy, OnInit, OnChanges {
           externalParamProfile.name
         )
       );
+  }
+
+  submitModification() {
+    alert('To save form');
   }
 }

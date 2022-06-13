@@ -36,76 +36,27 @@
  */
 package fr.gouv.vitamui.commons.api.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.validator.constraints.Length;
 
-import javax.validation.constraints.NotNull;
-import java.time.OffsetDateTime;
+import java.io.Serializable;
+import java.util.List;
 
+/**
+ * The ParameterListDto for the external Parameter.
+ */
 @Getter
 @Setter
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-@JsonIgnoreProperties(ignoreUnknown = true)
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExternalParamProfileDto extends IdDto {
+@ToString
+public class ParameterListDto implements Serializable {
 
-    public static final String PARAM_ACCESS_CONTRACT_NAME = "PARAM_ACCESS_CONTRACT";
-    public static final String PARAM_BULK_OPERATIONS_THRESHOLD_NAME = "PARAM_BULK_OPERATIONS_THRESHOLD";
+    private static final long serialVersionUID = -3137972847122776634L;
 
-    @NotNull
-    @Length(min = 2, max = 100)
-    private String name;
+    private List<ParameterDto> parameters;
 
-    @NotNull
-    @Length(min = 2, max = 100)
-    private String description;
-
-    @NotNull
-    @Length(min = 2, max = 100)
-    private String accessContract;
-
-    @Length(min = 2, max = 100)
-    private String profileIdentifier;
-
-    @Length(min = 2, max = 100)
-    private String idProfile;
-
-    @Length(min = 2, max = 100)
-    private String externalParamIdentifier;
-
-    @Length(min = 2, max = 100)
-    private String idExternalParam;
-
-    private boolean enabled;
-
-    private Integer bulkOperationsThreshold;
-
-    private ParameterDto[] parameters;
-
-    private OffsetDateTime dateTime = OffsetDateTime.now();
-
-    public void transformFields() {
-        if (parameters != null && parameters.length > 0) {
-            for (ParameterDto parameterDto : parameters) {
-                if (parameterDto.getKey().equals(PARAM_BULK_OPERATIONS_THRESHOLD_NAME)) {
-                    try {
-                        this.bulkOperationsThreshold = Integer.valueOf(parameterDto.getValue());
-                    } catch (NumberFormatException nfe) {
-                        throw new IllegalArgumentException(
-                            "The field bulkOperationsThreshold parameter contains wrong number value");
-                    }
-                } else if (parameterDto.getKey().equals(PARAM_ACCESS_CONTRACT_NAME)) {
-                    this.accessContract = parameterDto.getValue();
-                }
-            }
-        }
-    }
 }

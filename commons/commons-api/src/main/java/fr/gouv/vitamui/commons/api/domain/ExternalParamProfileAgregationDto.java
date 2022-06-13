@@ -55,10 +55,7 @@ import java.time.OffsetDateTime;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExternalParamProfileDto extends IdDto {
-
-    public static final String PARAM_ACCESS_CONTRACT_NAME = "PARAM_ACCESS_CONTRACT";
-    public static final String PARAM_BULK_OPERATIONS_THRESHOLD_NAME = "PARAM_BULK_OPERATIONS_THRESHOLD";
+public class ExternalParamProfileAgregationDto extends IdDto {
 
     @NotNull
     @Length(min = 2, max = 100)
@@ -91,21 +88,4 @@ public class ExternalParamProfileDto extends IdDto {
     private ParameterDto[] parameters;
 
     private OffsetDateTime dateTime = OffsetDateTime.now();
-
-    public void transformFields() {
-        if (parameters != null && parameters.length > 0) {
-            for (ParameterDto parameterDto : parameters) {
-                if (parameterDto.getKey().equals(PARAM_BULK_OPERATIONS_THRESHOLD_NAME)) {
-                    try {
-                        this.bulkOperationsThreshold = Integer.valueOf(parameterDto.getValue());
-                    } catch (NumberFormatException nfe) {
-                        throw new IllegalArgumentException(
-                            "The field bulkOperationsThreshold parameter contains wrong number value");
-                    }
-                } else if (parameterDto.getKey().equals(PARAM_ACCESS_CONTRACT_NAME)) {
-                    this.accessContract = parameterDto.getValue();
-                }
-            }
-        }
-    }
 }

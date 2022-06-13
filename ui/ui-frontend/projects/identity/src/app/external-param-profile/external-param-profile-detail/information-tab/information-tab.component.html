@@ -70,5 +70,35 @@
         </mat-form-field>
       </div>
     </div>
+    <div class="row">
+      <div class="col-6">
+        <vitamui-common-slide-toggle formControlName="setPlateformThresholdSetted" onchange="updateSettingThreshold()">
+          {{ 'EXTERNAL_PARAM_PROFILE.PLATEFORM_BULK_OPERATIONS_THRESHOLD' | translate }}
+        </vitamui-common-slide-toggle>
+      </div>
+      <div class="col-6" *ngIf="!form.get('setPlateformThresholdSetted').value">
+        <mat-form-field class="vitamui-mat-select">
+          <mat-select
+            formControlName="bulkOperationsThreshold"
+            placeholder="{{ 'EXTERNAL_PARAM_PROFILE.PLATEFORM_BULK_OPERATIONS_THRESHOLD' | translate }}"
+            required="required"
+            panelclass="vitamui-mat-select"
+            class="w-100"
+          >
+            <mat-option *ngFor="let thresholdValue of thresholdValues" [value]="thresholdValue">
+              {{ 'EXTERNAL_PARAM_PROFILE.MAX_BULK_OPERATIONS_THRESHOLD_VALUES' | translate: { threshold: thresholdValue | number } }}
+            </mat-option>
+          </mat-select>
+          <div class="select-arrow">
+            <i class="material-icons">keyboard_arrow_down</i>
+          </div>
+        </mat-form-field>
+      </div>
+    </div>
+    <div class="row">
+      <button type="submit" class="btn primary mr-4" (click)="initListenersOnFormsValuesChanges()">
+        {{ 'COMMON.SAVE' | translate }}
+      </button>
+    </div>
   </form>
 </div>
