@@ -116,6 +116,7 @@ export class InformationTabComponent implements OnDestroy, OnInit, OnChanges {
               id: this.externalParamProfile.id,
               idExternalParam: this.externalParamProfile.idExternalParam,
               idProfile: this.externalParamProfile.idProfile,
+              bulkOperationsThreshold: this.externalParamProfile.bulkOperationsThreshold,
             },
             formData
           )
@@ -145,6 +146,24 @@ export class InformationTabComponent implements OnDestroy, OnInit, OnChanges {
   }
 
   submitModification() {
-    alert('To save form');
+    this.updateFormSub = this.form.valueChanges
+      .pipe(
+        map(() => diff(this.form.value, this.previousValue)),
+        filter((formData) => !isEmpty(formData)),
+        map((formData) =>
+          extend(
+            {
+              id: this.externalParamProfile.id,
+              idExternalParam: this.externalParamProfile.idExternalParam,
+              idProfile: this.externalParamProfile.idProfile,
+              bulkOperationsThreshold: this.externalParamProfile.bulkOperationsThreshold,
+            },
+            formData
+          )
+        ),
+        switchMap((formData) => this.externalParamProfileService.patch(formData).pipe(catchError((error) => of(error)))),
+        catchError((error) => of(error))
+      )
+      .subscribe((externalParamProfile: ExternalParamProfile) => this.resetForm(this.form, externalParamProfile, this.readOnly));
   }
 }
