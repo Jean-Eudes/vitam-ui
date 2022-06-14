@@ -86,6 +86,8 @@ public class ExternalParamProfileDto extends IdDto {
 
     private boolean enabled;
 
+    private boolean usePlatformBulkOperationsThreshold;
+
     private Integer bulkOperationsThreshold;
 
     private ParameterDto[] parameters;

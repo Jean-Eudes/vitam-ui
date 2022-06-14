@@ -82,12 +82,12 @@
           <div class="text large bold">{{ 'EXTERNAL_PARAM_PROFILE.MAX_BULK_OPERATIONS_THRESHOLD_TITLE' | translate }}</div>
 
           <div class="mb-2">
-            <vitamui-common-slide-toggle formControlName="setPlateformThresholdSetted" onchange="updateSettingThreshold()">
+            <vitamui-common-slide-toggle formControlName="usePlatformBulkOperationsThreshold">
               {{ 'EXTERNAL_PARAM_PROFILE.PLATEFORM_BULK_OPERATIONS_THRESHOLD' | translate }}
             </vitamui-common-slide-toggle>
           </div>
 
-          <mat-form-field class="vitamui-mat-select" *ngIf="!externalParamProfileForm.get('setPlateformThresholdSetted').value">
+          <mat-form-field class="vitamui-mat-select" *ngIf="!externalParamProfileForm.get('usePlatformBulkOperationsThreshold').value">
             <mat-select
               formControlName="bulkOperationsThreshold"
               placeholder="{{ 'EXTERNAL_PARAM_PROFILE.PLATEFORM_BULK_OPERATIONS_THRESHOLD' | translate }}"

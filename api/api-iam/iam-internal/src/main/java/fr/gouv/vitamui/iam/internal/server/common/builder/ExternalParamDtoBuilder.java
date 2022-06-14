@@ -48,7 +48,7 @@ public class ExternalParamDtoBuilder {
         ExternalParametersDto externalParametersDto = new ExternalParametersDto();
         List<ParameterDto> parametersDtos = new ArrayList<>();
         parametersDtos.add(new ParameterDto(PARAM_ACCESS_CONTRACT_NAME, entityDto.getAccessContract()));
-        if (entityDto.getBulkOperationsThreshold() != null) {
+        if (!entityDto.isUsePlatformBulkOperationsThreshold() && entityDto.getBulkOperationsThreshold() != null) {
             parametersDtos.add(new ParameterDto(PARAM_BULK_OPERATIONS_THRESHOLD_NAME,
                 String.valueOf(entityDto.getBulkOperationsThreshold())));
         }

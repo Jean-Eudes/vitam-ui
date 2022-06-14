@@ -4,10 +4,11 @@
       <div class="col-1">
         <i class="vitamui-icon vitamui-icon-gestion-de-profil"></i>
       </div>
-      <div class="col-3">
+      <div class="col-2">
         {{ 'EXTERNAL_PARAM_PROFILE.EXTERNAL_PARAM_PROFILE_NAME' | translate }}
       </div>
       <div class="col-2">{{ 'EXTERNAL_PARAM_PROFILE.IDENTIFIER' | translate }}</div>
+      <div class="col-1">{{ 'EXTERNAL_PARAM_PROFILE.USE_PLATFORM_BULK_OPERATIONS_THRESHOLD_TITLE' | translate }}</div>
       <div class="col-2">{{ 'EXTERNAL_PARAM_PROFILE.MAX_BULK_OPERATIONS_THRESHOLD_TITLE' | translate }}</div>
       <div class="col-4">{{ 'EXTERNAL_PARAM_PROFILE.DESCRIPTION' | translate }}</div>
     </div>
@@ -21,8 +22,9 @@
               [ngClass]="externalParamProfile?.enabled ? 'status-badge-green' : 'status-badge-grey'"
             ></i>
           </div>
-          <div class="col-3">{{ externalParamProfile.name }}</div>
+          <div class="col-2">{{ externalParamProfile.name }}</div>
           <div class="col-2">{{ externalParamProfile.accessContract }}</div>
+          <div class="col-1">{{ externalParamProfile.usePlatformBulkOperationsThreshold | number }}</div>
           <div class="col-2">{{ externalParamProfile.bulkOperationsThreshold | number }}</div>
           <div class="col-4">
             {{ externalParamProfile.description | truncate: 50 }}

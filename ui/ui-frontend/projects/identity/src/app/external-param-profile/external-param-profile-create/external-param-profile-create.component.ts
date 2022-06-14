@@ -86,7 +86,7 @@ export class ExternalParamProfileCreateComponent implements OnInit, OnDestroy {
       accessContract: [null, Validators.required],
       description: [null, Validators.required],
       name: [null, Validators.required],
-      setPlateformThresholdSetted: true,
+      usePlatformBulkOperationsThreshold: true,
       bulkOperationsThreshold: [null, []],
     });
 
@@ -131,6 +131,4 @@ export class ExternalParamProfileCreateComponent implements OnInit, OnDestroy {
   formValid(): boolean {
     return this.externalParamProfileForm.pending || this.externalParamProfileForm.invalid;
   }
-
-  updateSettingThreshold() {}
 }

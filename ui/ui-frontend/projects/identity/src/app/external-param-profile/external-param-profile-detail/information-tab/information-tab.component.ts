@@ -100,7 +100,7 @@ export class InformationTabComponent implements OnDestroy, OnInit, OnChanges {
       description: [null, Validators.required],
       enabled: false,
       accessContract: [null, Validators.required],
-      setPlateformThresholdSetted: true,
+      usePlatformBulkOperationsThreshold: true,
       bulkOperationsThreshold: [null, []],
     });
   }
@@ -116,6 +116,7 @@ export class InformationTabComponent implements OnDestroy, OnInit, OnChanges {
               id: this.externalParamProfile.id,
               idExternalParam: this.externalParamProfile.idExternalParam,
               idProfile: this.externalParamProfile.idProfile,
+              usePlatformBulkOperationsThreshold: this.externalParamProfile.usePlatformBulkOperationsThreshold,
               bulkOperationsThreshold: this.externalParamProfile.bulkOperationsThreshold,
             },
             formData
@@ -146,24 +147,25 @@ export class InformationTabComponent implements OnDestroy, OnInit, OnChanges {
   }
 
   submitModification() {
-    this.updateFormSub = this.form.valueChanges
-      .pipe(
-        map(() => diff(this.form.value, this.previousValue)),
-        filter((formData) => !isEmpty(formData)),
-        map((formData) =>
-          extend(
-            {
-              id: this.externalParamProfile.id,
-              idExternalParam: this.externalParamProfile.idExternalParam,
-              idProfile: this.externalParamProfile.idProfile,
-              bulkOperationsThreshold: this.externalParamProfile.bulkOperationsThreshold,
-            },
-            formData
-          )
-        ),
-        switchMap((formData) => this.externalParamProfileService.patch(formData).pipe(catchError((error) => of(error)))),
-        catchError((error) => of(error))
-      )
-      .subscribe((externalParamProfile: ExternalParamProfile) => this.resetForm(this.form, externalParamProfile, this.readOnly));
+    let updated = diff(this.form.value, this.previousValue);
+    if (!isEmpty(updated)) {
+      updated = extend(
+        {
+          //  id: this.externalParamProfile.id,
+          idExternalParam: this.externalParamProfile.idExternalParam,
+          idProfile: this.externalParamProfile.idProfile,
+        },
+        updated
+      );
+      if (updated.usePlatformBulkOperationsThreshold) {
+        //  updated.bulkOperationsThreshold = null;
+        delete updated.bulkOperationsThreshold;
+        delete updated.usePlatformBulkOperationsThreshold;
+      }
+
+      console.log(updated);
+
+      this.externalParamProfileService.patch({ id: this.externalParamProfile.id, updated }).pipe(catchError((error) => of(error)));
+    }
   }
 }
