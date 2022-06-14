@@ -4,7 +4,7 @@
 
 # Args parsing with default values
 NAME                := mongod
-VERSION             := 5.0.6
+VERSION             := 5.0.9
 DEPENDENCIES        := mongodb-org
 
 # Staging root configuration
